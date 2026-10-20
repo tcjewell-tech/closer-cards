@@ -25,10 +25,32 @@ Inspired by research on structured self-disclosure and closeness (Aron et al., 1
 
 1. Clone the repo and open it in Android Studio (latest stable).
 2. Let Gradle sync, then run the `app` configuration on a device or emulator.
-3. Build a debug APK: `./gradlew assembleDebug`
-4. Output: `app/build/outputs/apk/debug/app-debug.apk`
+3. First time only: the repo ships `gradle/wrapper/gradle-wrapper.properties` but not the wrapper scripts. Generate them from Studio's Gradle panel (**closer-cards > Tasks > build setup > wrapper**), then commit `gradlew`, `gradlew.bat` and `gradle/wrapper/gradle-wrapper.jar`.
+4. Build a debug APK: `./gradlew assembleDebug` (Windows: `gradlew.bat assembleDebug`)
+5. Output: `app/build/outputs/apk/debug/app-debug.apk`
 
-Release builds are signed locally for sideloading. Keystores and signing configs are never committed.
+### Tests
+
+- Unit tests (deck loading, turn logic): `./gradlew testDebugUnitTest`
+- Full-session UI test (needs a running emulator or connected device): `./gradlew connectedDebugAndroidTest`
+
+### Signed release APK for sideloading
+
+Keystores and signing configs are never committed.
+
+1. Create a keystore once, outside the repo or in its root (`*.jks` is gitignored):
+   `keytool -genkeypair -v -keystore closer-cards.jks -keyalg RSA -keysize 2048 -validity 10000 -alias closercards`
+2. Create `keystore.properties` in the repo root (gitignored):
+   ```properties
+   storeFile=closer-cards.jks
+   storePassword=...
+   keyAlias=closercards
+   keyPassword=...
+   ```
+3. `./gradlew assembleRelease` produces `app/build/outputs/apk/release/app-release.apk`.
+4. Install it with `adb install app/build/outputs/apk/release/app-release.apk`, or copy the APK to the phone and open it (allow "Install unknown apps" for your file manager when prompted).
+
+Without `keystore.properties`, `assembleRelease` still builds, but the APK is unsigned and won't install.
 
 ## Project structure
 
@@ -38,22 +60,26 @@ closer-cards/
 │   └── src/
 │       ├── main/
 │       │   ├── assets/cards.json      # the 36-card deck
-│       │   ├── java/.../ui/           # Compose screens
-│       │   ├── java/.../model/        # Card, Player, Session state
-│       │   └── AndroidManifest.xml    # no INTERNET permission
+│       │   ├── java/com/tom/closercards/
+│       │   │   ├── MainActivity.kt    # NavHost: home, setup, play
+│       │   │   ├── SessionViewModel.kt
+│       │   │   ├── model/             # Card + deck loader, session state machine
+│       │   │   └── ui/                # Compose screens and theme
+│       │   ├── res/values/strings.xml # all on-screen copy
+│       │   └── AndroidManifest.xml    # no permissions at all
 │       ├── test/                      # deck loading and turn-logic unit tests
 │       └── androidTest/               # full-session Compose UI test
+├── gradle/libs.versions.toml          # dependency versions
 ├── docs/
 │   ├── closer-cards-spec-v1.0.docx    # product spec
 │   └── claude-code-prompt-v1.0.md     # MVP implementation prompt
 ├── README.md
-├── LICENSE
 └── .gitignore
 ```
 
 ## Deck format
 
-`app/src/main/assets/cards.json` is an array of cards. Edit it to change questions without touching code.
+`app/src/main/assets/cards.json` is an array of cards. Edit it to change questions without touching code. The app expects exactly 3 sets with orders 1 to 12, and crashes on launch with a clear message if the deck doesn't match (`DeckTest` catches this first).
 
 ```json
 [
