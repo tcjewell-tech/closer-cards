@@ -1,14 +1,14 @@
 [versions]
-agp = "8.7.3"
-kotlin = "2.1.0"
-composeBom = "2024.12.01"
-activityCompose = "1.9.3"
-navigationCompose = "2.8.5"
-lifecycle = "2.8.7"
-serializationJson = "1.7.3"
+agp = "9.4.1"
+kotlin = "2.4.21"
+composeBom = "2026.09.00"
+activityCompose = "1.13.0"
+navigationCompose = "2.10.2"
+lifecycle = "2.11.0"
+serializationJson = "1.12.0"
 junit = "4.13.2"
-androidxJunit = "1.2.1"
-testRunner = "1.6.2"
+androidxJunit = "1.3.0"
+testRunner = "1.7.0"
 
 [libraries]
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
@@ -29,6 +29,5 @@ androidx-test-runner = { group = "androidx.test", name = "runner", version.ref =
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
