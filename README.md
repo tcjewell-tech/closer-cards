@@ -19,15 +19,14 @@ Inspired by research on structured self-disclosure and closeness (Aron et al., 1
 - Single activity, Navigation Compose
 - MVVM with ViewModel and StateFlow (in-memory session state)
 - kotlinx.serialization for the bundled deck
-- minSdk 26
+- minSdk 26, target/compile SDK 37; AGP 9.4, Gradle 9.8, Kotlin 2.4
 
 ## Getting started
 
 1. Clone the repo and open it in Android Studio (latest stable).
 2. Let Gradle sync, then run the `app` configuration on a device or emulator.
-3. First time only: the repo ships `gradle/wrapper/gradle-wrapper.properties` but not the wrapper scripts. Generate them from Studio's Gradle panel (**closer-cards > Tasks > build setup > wrapper**), then commit `gradlew`, `gradlew.bat` and `gradle/wrapper/gradle-wrapper.jar`.
-4. Build a debug APK: `./gradlew assembleDebug` (Windows: `gradlew.bat assembleDebug`)
-5. Output: `app/build/outputs/apk/debug/app-debug.apk`
+3. Build a debug APK: `./gradlew assembleDebug` (Windows: `gradlew.bat assembleDebug`). From a plain terminal, point `JAVA_HOME` at Studio's bundled JDK first (`C:\Program Files\Android\Android Studio\jbr`).
+4. Output: `app/build/outputs/apk/debug/app-debug.apk`
 
 ### Tests
 
