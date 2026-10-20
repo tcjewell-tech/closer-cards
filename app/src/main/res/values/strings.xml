@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Closer Cards</string>
+
+    <string name="home_how">Take turns flipping cards across three sets of 12. Each set goes a little deeper. You both answer every card, and either of you can skip any card.</string>
+    <string name="start">Start</string>
+
+    <string name="setup_title">Who\'s playing?</string>
+    <string name="setup_hint">Names are optional.</string>
+    <string name="name_a_label">First player</string>
+    <string name="name_b_label">Second player</string>
+    <string name="default_a">Player A</string>
+    <string name="default_b">Player B</string>
+    <string name="start_set_1">Start Set 1</string>
+
+    <string name="set_label">Set %1$d of %2$d</string>
+    <string-array name="set_themes">
+        <item>Light and personal history</item>
+        <item>Values and experiences</item>
+        <item>Vulnerability and connection</item>
+    </string-array>
+    <string-array name="set_guidance">
+        <item>Keep it light. There are no wrong answers.</item>
+        <item>Take your time, and listen as much as you share.</item>
+        <item>Go gently. Either of you may pass on any question, no explanation needed.</item>
+    </string-array>
+    <string name="begin_set">Begin</string>
+
+    <string name="progress">Set %1$d · Card %2$d of %3$d</string>
+    <string name="turn_banner">%1$s answers first</string>
+    <string name="card_face_down">Tap to reveal</string>
+    <string name="card_face_down_desc">Face-down card. Tap to reveal the question.</string>
+    <string name="next">Next</string>
+    <string name="skip">Skip</string>
+
+    <string name="set_complete_title">Set %1$d complete</string>
+    <string name="set_complete_body">Take a breath. Continue when you\'re both ready.</string>
+    <string name="continue_set">Continue</string>
+    <string name="end_session">End session</string>
+
+    <string name="done_title">That\'s the deck</string>
+    <string name="done_body">Thanks for playing. We hope you know each other a little better tonight.</string>
+    <string name="play_again">Play Again</string>
+</resources>
