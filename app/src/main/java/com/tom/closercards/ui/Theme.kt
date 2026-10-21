@@ -40,10 +40,47 @@ private val DarkColors = darkColorScheme(
     onSecondaryContainer = Color(0xFFF6DDE1),
 )
 
-/** Follows the system light/dark setting; there is no in-app toggle in v1. */
+// The adult decks always use their own dark palette so it's obvious which deck is on screen.
+private val AfterDarkColors = darkColorScheme(
+    primary = Color(0xFFF2A7C3),
+    onPrimary = Color(0xFF4A0E2C),
+    primaryContainer = Color(0xFF5E1B3C),
+    onPrimaryContainer = Color(0xFFFFD8E8),
+    secondaryContainer = Color(0xFF3D2333),
+    onSecondaryContainer = Color(0xFFF5DCEA),
+    background = Color(0xFF140A10),
+    onBackground = Color(0xFFF3E3EA),
+    surface = Color(0xFF140A10),
+    onSurface = Color(0xFFF3E3EA),
+    surfaceContainerHigh = Color(0xFF2A1822),
+)
+
+private val AfterDarkerColors = darkColorScheme(
+    primary = Color(0xFFFF8A8F),
+    onPrimary = Color(0xFF5C0A12),
+    primaryContainer = Color(0xFF6B0F1A),
+    onPrimaryContainer = Color(0xFFFFDADB),
+    secondaryContainer = Color(0xFF3A1E21),
+    onSecondaryContainer = Color(0xFFF7DCDD),
+    background = Color(0xFF0B0708),
+    onBackground = Color(0xFFF1E1E2),
+    surface = Color(0xFF0B0708),
+    onSurface = Color(0xFFF1E1E2),
+    surfaceContainerHigh = Color(0xFF241618),
+)
+
+/** True when [deckId] forces a dark palette regardless of the system setting. */
+fun isAdultDeck(deckId: String) = deckId == "after-dark" || deckId == "after-darker"
+
+/** The main deck follows the system light/dark setting; there is no in-app toggle in v1. */
 @Composable
-fun CloserCardsTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = if (isSystemInDarkTheme()) DarkColors else LightColors, content = content)
+fun CloserCardsTheme(deckId: String = "main", content: @Composable () -> Unit) {
+    val colors = when (deckId) {
+        "after-dark" -> AfterDarkColors
+        "after-darker" -> AfterDarkerColors
+        else -> if (isSystemInDarkTheme()) DarkColors else LightColors
+    }
+    MaterialTheme(colorScheme = colors, content = content)
 }
 
 /** Centered, scrollable screen body, so large system font sizes never clip content. */

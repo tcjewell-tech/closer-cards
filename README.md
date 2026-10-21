@@ -7,6 +7,7 @@ Inspired by research on structured self-disclosure and closeness (Aron et al., 1
 ## Features (MVP, v1.0)
 
 - 36 original questions in 3 escalating sets of 12 (light, values, vulnerability)
+- Two optional adult decks, **After Dark** (explicit) and **After Darker** (kink/BDSM), each behind a consent screen and with its own dark palette
 - Tap-to-flip card with a turn banner that alternates who answers first
 - Optional player names
 - Skip on every card; Set 3 reminds players that either person may pass
@@ -58,7 +59,8 @@ closer-cards/
 ├── app/
 │   └── src/
 │       ├── main/
-│       │   ├── assets/cards.json      # the 36-card deck
+│       │   ├── assets/decks.json      # deck list: titles, set themes, guidance, consent text
+│       │   ├── assets/cards*.json     # one 36-card file per deck
 │       │   ├── java/com/tom/closercards/
 │       │   │   ├── MainActivity.kt    # NavHost: home, setup, play
 │       │   │   ├── SessionViewModel.kt
@@ -84,11 +86,11 @@ Play in a browser and edit the questions without a phone:
 node web/server.mjs
 ```
 
-Open http://127.0.0.1:8787. **Edit deck** on the home screen saves straight to `app/src/main/assets/cards.json`, the same file the app uses (rebuild the app to see changes on the phone). The **After Dark** deck (explicit, for adults) is web-only for now and lives in `web/cards-after-dark.json`; it has its own editor link. The server only listens on this computer, rejects decks that aren't 3 sets of 12, and needs nothing beyond Node. Tests: `node --test web/server.test.mjs`.
+Open http://127.0.0.1:8787. The **Edit questions** links on the home screen save straight to the deck files in `app/src/main/assets/`, the same files the app uses (rebuild the app to see changes on the phone). The server only listens on this computer, rejects decks that aren't 3 sets of 12, and needs nothing beyond Node. Tests: `node --test web/server.test.mjs`.
 
 ## Deck format
 
-`app/src/main/assets/cards.json` is an array of cards. Edit it to change questions without touching code. The app expects exactly 3 sets with orders 1 to 12, and crashes on launch with a clear message if the deck doesn't match (`DeckTest` catches this first).
+`app/src/main/assets/decks.json` lists the decks in home-screen order (the first is the main game). Each entry names its cards file, three set themes, three guidance lines and, for adult decks, the consent text. Each cards file is an array of cards; edit it to change questions without touching code. Every deck must be exactly 3 sets with orders 1 to 12, and the app crashes on launch with a clear message if one doesn't match (`DeckTest` catches this first).
 
 ```json
 [
@@ -99,7 +101,7 @@ Open http://127.0.0.1:8787. **Edit deck** on the home screen saves straight to `
 ## Roadmap
 
 - P1: soft per-set timer, favorites, theme toggle and haptics, resume session, optional closing exercise
-- P2: additional decks, share a card as an image, remote two-device mode
+- P2: share a card as an image, remote two-device mode (additional decks: done)
 
 See `docs/closer-cards-spec-v1.0.docx` for the full prioritized feature table.
 

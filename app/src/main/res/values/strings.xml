@@ -14,17 +14,10 @@
     <string name="start_set_1">Start Set 1</string>
 
     <string name="set_label">Set %1$d of %2$d</string>
-    <string-array name="set_themes">
-        <item>Light and personal history</item>
-        <item>Values and experiences</item>
-        <item>Vulnerability and connection</item>
-    </string-array>
-    <string-array name="set_guidance">
-        <item>Keep it light. There are no wrong answers.</item>
-        <item>Take your time, and listen as much as you share.</item>
-        <item>Go gently. Either of you may pass on any question, no explanation needed.</item>
-    </string-array>
     <string name="begin_set">Begin</string>
+
+    <string name="consent_agree">We\'re both in</string>
+    <string name="back">Back</string>
 
     <string name="progress">Set %1$d · Card %2$d of %3$d</string>
     <string name="turn_banner">%1$s answers first</string>

@@ -1,14 +1,14 @@
-// Local-only dev server for the web version: serves the game and reads/writes the app's deck.
+// Local-only dev server for the web version: serves the game and reads/writes the app's decks.
 // Run: node web/server.mjs
 import { createServer } from 'node:http';
 import { readFile, writeFile, rename } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-// URL path -> deck file. The main deck is the Android app's; After Dark is web-only for now.
-const DECKS = {
-  '/cards.json': fileURLToPath(new URL('../app/src/main/assets/cards.json', import.meta.url)),
-  '/cards-after-dark.json': fileURLToPath(new URL('./cards-after-dark.json', import.meta.url)),
-};
+// The app's assets are the single source: decks.json lists the decks, one cards file each.
+const ASSETS = new URL('../app/src/main/assets/', import.meta.url);
+const asset = (name) => fileURLToPath(new URL(name, ASSETS));
+// Only files named in decks.json are served or written, so no other path is reachable.
+const deckFiles = async () => JSON.parse(await readFile(asset('decks.json'), 'utf8')).map((d) => `/${d.file}`);
 const PAGE = fileURLToPath(new URL('./index.html', import.meta.url));
 const PORT = Number(process.env.PORT) || 8787;
 const MAX_BODY = 64 * 1024;
@@ -52,8 +52,11 @@ async function handle(req, res) {
   if (!ALLOWED_HOSTS.has(req.headers.host)) return send(403, 'Forbidden');
 
   if (req.method === 'GET' && req.url === '/') return send(200, await readFile(PAGE), 'text/html; charset=utf-8');
-  const deckFile = Object.hasOwn(DECKS, req.url) ? DECKS[req.url] : null;
-  if (!deckFile) return send(404, 'Not found');
+  if (req.method === 'GET' && req.url === '/decks.json') {
+    return send(200, await readFile(asset('decks.json')), 'application/json; charset=utf-8');
+  }
+  if (!(await deckFiles()).includes(req.url)) return send(404, 'Not found');
+  const deckFile = asset(req.url.slice(1));
   if (req.method === 'GET') return send(200, await readFile(deckFile), 'application/json; charset=utf-8');
   if (req.method !== 'PUT') return send(405, 'Method not allowed');
 

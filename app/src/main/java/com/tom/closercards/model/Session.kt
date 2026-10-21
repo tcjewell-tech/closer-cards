@@ -8,6 +8,7 @@ enum class Phase { SetIntro, Card, SetComplete, Done }
 data class SessionState(
     val nameA: String,
     val nameB: String,
+    val deckId: String = "main",
     val set: Int = 1,
     val order: Int = 1,
     val phase: Phase = Phase.SetIntro,

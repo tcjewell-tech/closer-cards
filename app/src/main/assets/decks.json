@@ -1,0 +1,37 @@
+[
+  {
+    "id": "main",
+    "title": "Closer Cards",
+    "file": "cards.json",
+    "themes": ["Light and personal history", "Values and experiences", "Vulnerability and connection"],
+    "guidance": [
+      "Keep it light. There are no wrong answers.",
+      "Take your time, and listen as much as you share.",
+      "Go gently. Either of you may pass on any question, no explanation needed."
+    ]
+  },
+  {
+    "id": "after-dark",
+    "title": "After Dark",
+    "file": "cards-after-dark.json",
+    "consent": "After Dark is explicit and meant for adults. Only play if you're both up for it, and skip anything, anytime.",
+    "themes": ["Chemistry", "Desire", "Fantasy and honesty"],
+    "guidance": [
+      "Start with what draws you in. Flirting encouraged. Either of you may pass on any question.",
+      "Be honest about what you like. Curiosity, not judgment. Either of you may pass on any question.",
+      "The most candid set. Either of you may pass on any question, no explanation needed."
+    ]
+  },
+  {
+    "id": "after-darker",
+    "title": "After Darker",
+    "file": "cards-after-darker.json",
+    "consent": "After Darker is the most explicit deck, with questions about kink and BDSM. Only play if you're both enthusiastic. Agree on a safeword before you start, and remember: talking about something isn't agreeing to do it.",
+    "themes": ["Curiosity", "Power and play", "Limits and fantasies"],
+    "guidance": [
+      "Map what interests you. Curiosity isn't a commitment. Either of you may pass on any question.",
+      "Get specific about how power feels to you. Either of you may pass on any question.",
+      "The most explicit set. Check you've agreed on a safeword. Either of you may pass on any question, no explanation needed."
+    ]
+  }
+]

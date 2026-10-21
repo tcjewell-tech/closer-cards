@@ -4,15 +4,11 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { validateDeck, serializeDeck } from './server.mjs';
 
-const deck = JSON.parse(readFileSync(new URL('../app/src/main/assets/cards.json', import.meta.url), 'utf8'));
+const readAsset = (name) => JSON.parse(readFileSync(new URL(`../app/src/main/assets/${name}`, import.meta.url), 'utf8'));
+const deck = readAsset('cards.json');
 
-test('accepts the real deck', () => {
-  assert.equal(validateDeck(deck), null);
-});
-
-test('accepts the After Dark deck', () => {
-  const afterDark = JSON.parse(readFileSync(new URL('./cards-after-dark.json', import.meta.url), 'utf8'));
-  assert.equal(validateDeck(afterDark), null);
+test('accepts every deck listed in decks.json', () => {
+  for (const d of readAsset('decks.json')) assert.equal(validateDeck(readAsset(d.file)), null, d.file);
 });
 
 test('rejects a missing card', () => {

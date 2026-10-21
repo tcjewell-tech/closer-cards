@@ -9,12 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tom.closercards.R
 import com.tom.closercards.SessionViewModel
+import com.tom.closercards.model.DeckInfo
 import com.tom.closercards.model.Phase
 import com.tom.closercards.model.SET_COUNT
 
@@ -23,7 +23,7 @@ import com.tom.closercards.model.SET_COUNT
 fun PlayScreen(vm: SessionViewModel, onPlayAgain: () -> Unit) {
     val state by vm.state.collectAsStateWithLifecycle()
     when (state.phase) {
-        Phase.SetIntro -> SetIntro(state.set, onBegin = { vm.update { beginSet() } })
+        Phase.SetIntro -> SetIntro(state.set, vm.deck(state.deckId), onBegin = { vm.update { beginSet() } })
         // Keyed per card so a new card starts face down instead of animating back and flashing its question.
         Phase.Card -> key(state.set, state.order) {
             CardScreen(
@@ -43,19 +43,19 @@ fun PlayScreen(vm: SessionViewModel, onPlayAgain: () -> Unit) {
 }
 
 @Composable
-private fun SetIntro(set: Int, onBegin: () -> Unit) = ScreenColumn {
+private fun SetIntro(set: Int, deck: DeckInfo, onBegin: () -> Unit) = ScreenColumn {
     Text(
         stringResource(R.string.set_label, set, SET_COUNT),
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.primary,
     )
     Text(
-        stringArrayResource(R.array.set_themes)[set - 1],
+        deck.themes[set - 1],
         style = MaterialTheme.typography.headlineMedium,
         textAlign = TextAlign.Center,
     )
     Text(
-        stringArrayResource(R.array.set_guidance)[set - 1],
+        deck.guidance[set - 1],
         style = MaterialTheme.typography.bodyLarge,
         textAlign = TextAlign.Center,
     )
