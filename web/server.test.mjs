@@ -10,6 +10,11 @@ test('accepts the real deck', () => {
   assert.equal(validateDeck(deck), null);
 });
 
+test('accepts the After Dark deck', () => {
+  const afterDark = JSON.parse(readFileSync(new URL('./cards-after-dark.json', import.meta.url), 'utf8'));
+  assert.equal(validateDeck(afterDark), null);
+});
+
 test('rejects a missing card', () => {
   assert.match(validateDeck(deck.slice(1)), /36 cards/);
 });

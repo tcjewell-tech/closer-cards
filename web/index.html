@@ -77,34 +77,65 @@
   .status { flex: 1; color: var(--muted); }
   .status.error { color: #BA1A1A; font-weight: 600; }
   @media (prefers-color-scheme: dark) { .status.error { color: #FFB4AB; } }
+  /* After Dark: always a deep plum/wine palette, whatever the system theme. */
+  body.after-dark {
+    color-scheme: dark;
+    --primary: #F2A7C3; --on-primary: #4A0E2C;
+    --primary-container: #5E1B3C; --on-primary-container: #FFD8E8;
+    --secondary-container: #3D2333; --on-secondary-container: #F5DCEA;
+    --bg: #140A10; --on-bg: #F3E3EA; --card-up: #2A1822; --outline: #9C8590; --muted: #D8C2CC;
+  }
+  body.after-dark .status.error { color: #FFB4AB; }
 </style>
 </head>
 <body>
 <main id="app"></main>
 <script>
-// shortcut: copy is duplicated from app/src/main/res/values/strings.xml; share it if the copy changes often.
-const COPY = {
-  themes: ['Light and personal history', 'Values and experiences', 'Vulnerability and connection'],
-  guidance: [
-    'Keep it light. There are no wrong answers.',
-    'Take your time, and listen as much as you share.',
-    'Go gently. Either of you may pass on any question, no explanation needed.',
-  ],
+const DECKS = {
+  // shortcut: main copy is duplicated from app/src/main/res/values/strings.xml; share it if the copy changes often.
+  main: {
+    url: '/cards.json', title: 'Closer Cards', file: 'app/src/main/assets/cards.json, the same deck the Android app uses',
+    themes: ['Light and personal history', 'Values and experiences', 'Vulnerability and connection'],
+    guidance: [
+      'Keep it light. There are no wrong answers.',
+      'Take your time, and listen as much as you share.',
+      'Go gently. Either of you may pass on any question, no explanation needed.',
+    ],
+  },
+  afterDark: {
+    url: '/cards-after-dark.json', title: 'After Dark', file: 'web/cards-after-dark.json (web only for now)',
+    themes: ['Chemistry', 'Desire', 'Fantasy and honesty'],
+    guidance: [
+      'Start with what draws you in. Flirting encouraged. Either of you may pass on any question.',
+      'Be honest about what you like. Curiosity, not judgment. Either of you may pass on any question.',
+      'The most candid set. Either of you may pass on any question, no explanation needed.',
+    ],
+  },
 };
 const SETS = 3, PER_SET = 12;
 const app = document.getElementById('app');
-const s = { screen: 'home', nameA: '', nameB: '', set: 1, order: 1, flipped: false, deck: [], dirty: false };
+const s = { screen: 'home', deckKey: 'main', nameA: '', nameB: '', set: 1, order: 1, flipped: false, dirty: false };
 
 const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-const card = () => s.deck[(s.set - 1) * PER_SET + s.order - 1];
+const deck = () => DECKS[s.deckKey];
+const card = () => deck().cards[(s.set - 1) * PER_SET + s.order - 1];
 const firstName = () => (s.order % 2 === 1 ? s.nameA : s.nameB); // A answers first on odd cards, B on even
 
 const screens = {
   home: () => `
     <h1 tabindex="-1">Closer Cards</h1>
     <p>Take turns flipping cards across three sets of 12. Each set goes a little deeper. You both answer every card, and either of you can skip any card.</p>
-    <button class="btn" data-go="setup">Start</button>
-    <button class="btn link" data-go="edit">Edit deck</button>`,
+    <button class="btn" data-deck="main" data-go="setup">Start</button>
+    <button class="btn outline" data-deck="afterDark" data-go="consent">After Dark</button>
+    <div class="row">
+      <button class="btn link" data-deck="main" data-go="edit">Edit deck</button>
+      <button class="btn link" data-deck="afterDark" data-go="edit">Edit After Dark</button>
+    </div>`,
+  consent: () => `
+    <h2 tabindex="-1">After Dark</h2>
+    <p>After Dark is explicit and meant for adults. Only play if you're both up for it, and skip anything, anytime.</p>
+    <button class="btn" data-go="setup">We're both in</button>
+    <button class="btn outline" data-go="home">Back</button>`,
   setup: () => `
     <h2 tabindex="-1">Who's playing?</h2>
     <p>Names are optional.</p>
@@ -113,8 +144,8 @@ const screens = {
     <button class="btn" data-act="start">Start Set 1</button>`,
   intro: () => `
     <p class="label">Set ${s.set} of ${SETS}</p>
-    <h2 tabindex="-1">${COPY.themes[s.set - 1]}</h2>
-    <p>${COPY.guidance[s.set - 1]}</p>
+    <h2 tabindex="-1">${deck().themes[s.set - 1]}</h2>
+    <p>${deck().guidance[s.set - 1]}</p>
     <button class="btn" data-act="begin">Begin</button>`,
   card: () => `
     <p class="label" tabindex="-1">Set ${s.set} · Card ${s.order} of ${PER_SET}</p>
@@ -139,11 +170,11 @@ const screens = {
     <p>Thanks for playing. We hope you know each other a little better tonight.</p>
     <button class="btn" data-go="setup">Play Again</button>`,
   edit: () => `
-    <h2 tabindex="-1">Edit deck</h2>
-    <p>Changes save to <code>app/src/main/assets/cards.json</code>, the same deck the Android app uses.</p>
-    ${COPY.themes.map((theme, i) => `
+    <h2 tabindex="-1">Edit ${deck().title}</h2>
+    <p>Changes save to <code>${deck().file}</code>.</p>
+    ${deck().themes.map((theme, i) => `
       <h3>Set ${i + 1}: ${theme}</h3>
-      ${s.deck.slice(i * PER_SET, (i + 1) * PER_SET).map((c) => `
+      ${deck().cards.slice(i * PER_SET, (i + 1) * PER_SET).map((c) => `
         <label class="field">Card ${c.order}
           <textarea data-id="${esc(c.id)}" rows="2">${esc(c.text)}</textarea>
         </label>`).join('')}`).join('')}
@@ -154,9 +185,20 @@ const screens = {
     </div>`,
 };
 
+async function loadDeck(key) {
+  const d = DECKS[key];
+  if (!d.cards) {
+    const r = await fetch(d.url);
+    if (!r.ok) throw new Error(`${d.title} deck: ${r.statusText}`);
+    d.cards = (await r.json()).sort((a, b) => a.set - b.set || a.order - b.order);
+  }
+  s.deckKey = key;
+}
+
 function show(screen) {
   s.screen = screen;
   app.className = screen === 'edit' ? 'edit' : '';
+  document.body.classList.toggle('after-dark', screen !== 'home' && s.deckKey === 'afterDark');
   app.innerHTML = screens[screen]();
   app.querySelector('[tabindex="-1"]')?.focus();
 }
@@ -187,16 +229,17 @@ const actions = {
   async save() {
     const status = document.getElementById('status');
     const texts = Object.fromEntries([...app.querySelectorAll('textarea')].map((t) => [t.dataset.id, t.value]));
-    const deck = s.deck.map((c) => ({ ...c, text: texts[c.id].trim() }));
+    const d = deck();
+    const cards = d.cards.map((c) => ({ ...c, text: texts[c.id].trim() }));
     status.className = 'status';
     status.textContent = 'Saving…';
     try {
-      const res = await fetch('/cards.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(deck) });
+      const res = await fetch(d.url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cards) });
       const msg = await res.text();
       if (!res.ok) throw new Error(msg);
-      s.deck = deck;
+      d.cards = cards;
       s.dirty = false;
-      status.textContent = 'Saved. Rebuild the app to see changes on the phone.';
+      status.textContent = s.deckKey === 'main' ? 'Saved. Rebuild the app to see changes on the phone.' : 'Saved.';
     } catch (e) {
       status.className = 'status error';
       status.textContent = `Not saved: ${e.message}`;
@@ -209,9 +252,16 @@ const actions = {
   },
 };
 
-app.addEventListener('click', (e) => {
+const showError = (e) => {
+  app.innerHTML = `<h2>Couldn't load the deck</h2><p>${esc(e.message)}. Start the site with <code>node web/server.mjs</code>.</p>`;
+};
+
+app.addEventListener('click', async (e) => {
   const el = e.target.closest('[data-go], [data-act]');
   if (!el) return;
+  if (el.dataset.deck) {
+    try { await loadDeck(el.dataset.deck); } catch (err) { return showError(err); }
+  }
   if (el.dataset.go) show(el.dataset.go);
   else actions[el.dataset.act](el);
 });
@@ -222,13 +272,7 @@ app.addEventListener('keydown', (e) => {
 });
 addEventListener('beforeunload', (e) => { if (s.dirty) e.preventDefault(); });
 
-fetch('/cards.json')
-  .then((r) => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
-  .then((cards) => {
-    s.deck = cards.sort((a, b) => a.set - b.set || a.order - b.order);
-    show('home');
-  })
-  .catch((e) => { app.innerHTML = `<h2>Couldn't load the deck</h2><p>${esc(e.message)}. Start it with <code>node web/server.mjs</code>.</p>`; });
+show('home');
 </script>
 </body>
 </html>

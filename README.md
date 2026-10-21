@@ -84,7 +84,7 @@ Play in a browser and edit the questions without a phone:
 node web/server.mjs
 ```
 
-Open http://127.0.0.1:8787. **Edit deck** on the home screen saves straight to `app/src/main/assets/cards.json`, the same file the app uses (rebuild the app to see changes on the phone). The server only listens on this computer, rejects decks that aren't 3 sets of 12, and needs nothing beyond Node. Tests: `node --test web/server.test.mjs`.
+Open http://127.0.0.1:8787. **Edit deck** on the home screen saves straight to `app/src/main/assets/cards.json`, the same file the app uses (rebuild the app to see changes on the phone). The **After Dark** deck (explicit, for adults) is web-only for now and lives in `web/cards-after-dark.json`; it has its own editor link. The server only listens on this computer, rejects decks that aren't 3 sets of 12, and needs nothing beyond Node. Tests: `node --test web/server.test.mjs`.
 
 ## Deck format
 

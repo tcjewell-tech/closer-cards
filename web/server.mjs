@@ -4,9 +4,13 @@ import { createServer } from 'node:http';
 import { readFile, writeFile, rename } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const DECK = fileURLToPath(new URL('../app/src/main/assets/cards.json', import.meta.url));
+// URL path -> deck file. The main deck is the Android app's; After Dark is web-only for now.
+const DECKS = {
+  '/cards.json': fileURLToPath(new URL('../app/src/main/assets/cards.json', import.meta.url)),
+  '/cards-after-dark.json': fileURLToPath(new URL('./cards-after-dark.json', import.meta.url)),
+};
 const PAGE = fileURLToPath(new URL('./index.html', import.meta.url));
-const PORT = 8787;
+const PORT = Number(process.env.PORT) || 8787;
 const MAX_BODY = 64 * 1024;
 // Rejecting other Host headers blocks DNS-rebinding pages from writing the deck.
 const ALLOWED_HOSTS = new Set([`127.0.0.1:${PORT}`, `localhost:${PORT}`]);
@@ -48,8 +52,9 @@ async function handle(req, res) {
   if (!ALLOWED_HOSTS.has(req.headers.host)) return send(403, 'Forbidden');
 
   if (req.method === 'GET' && req.url === '/') return send(200, await readFile(PAGE), 'text/html; charset=utf-8');
-  if (req.url !== '/cards.json') return send(404, 'Not found');
-  if (req.method === 'GET') return send(200, await readFile(DECK), 'application/json; charset=utf-8');
+  const deckFile = Object.hasOwn(DECKS, req.url) ? DECKS[req.url] : null;
+  if (!deckFile) return send(404, 'Not found');
+  if (req.method === 'GET') return send(200, await readFile(deckFile), 'application/json; charset=utf-8');
   if (req.method !== 'PUT') return send(405, 'Method not allowed');
 
   let body = '';
@@ -67,13 +72,13 @@ async function handle(req, res) {
   if (error) return send(400, error);
 
   // Write then rename, so a crash mid-write can't leave a truncated deck.
-  const tmp = `${DECK}.tmp`;
+  const tmp = `${deckFile}.tmp`;
   await writeFile(tmp, serializeDeck(cards));
-  await rename(tmp, DECK);
+  await rename(tmp, deckFile);
   send(200, 'Saved');
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   createServer((req, res) =>
     handle(req, res).catch((e) => {
       if (!res.headersSent) res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
