@@ -76,6 +76,16 @@ closer-cards/
 └── .gitignore
 ```
 
+## Web version
+
+Play in a browser and edit the questions without a phone:
+
+```
+node web/server.mjs
+```
+
+Open http://127.0.0.1:8787. **Edit deck** on the home screen saves straight to `app/src/main/assets/cards.json`, the same file the app uses (rebuild the app to see changes on the phone). The server only listens on this computer, rejects decks that aren't 3 sets of 12, and needs nothing beyond Node. Tests: `node --test web/server.test.mjs`.
+
 ## Deck format
 
 `app/src/main/assets/cards.json` is an array of cards. Edit it to change questions without touching code. The app expects exactly 3 sets with orders 1 to 12, and crashes on launch with a clear message if the deck doesn't match (`DeckTest` catches this first).

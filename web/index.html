@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Closer Cards</title>
+<style>
+  /* Colors mirror app/src/main/java/com/tom/closercards/ui/Theme.kt */
+  :root {
+    --primary: #9C3D54; --on-primary: #FFFFFF;
+    --primary-container: #FFD9DF; --on-primary-container: #3F0016;
+    --secondary-container: #F6DDE1; --on-secondary-container: #2B1519;
+    --bg: #FFF8F7; --on-bg: #22191B; --card-up: #F8E9EB; --outline: #847375; --muted: #524345;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #FFB1C1; --on-primary: #5F1127;
+      --primary-container: #7E2540; --on-primary-container: #FFD9DF;
+      --secondary-container: #5C3F44; --on-secondary-container: #F6DDE1;
+      --bg: #191113; --on-bg: #F0DEE0; --card-up: #2E2426; --outline: #9F8C8F; --muted: #D6C2C4;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--bg); color: var(--on-bg);
+    font: 1.0625rem/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main {
+    max-width: 30rem; min-height: 100vh; margin: 0 auto; padding: 24px 16px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; text-align: center;
+  }
+  main.edit { justify-content: flex-start; max-width: 40rem; text-align: left; align-items: stretch; }
+  h1 { font-size: 2.25rem; line-height: 1.2; color: var(--primary); margin: 0; font-weight: 500; }
+  h2 { font-size: 1.75rem; line-height: 1.25; margin: 0; font-weight: 500; }
+  h3 { font-size: 1.125rem; margin: 24px 0 8px; color: var(--primary); }
+  h1:focus, h2:focus { outline: none; }
+  p { margin: 0; }
+  .label { font-weight: 600; color: var(--primary); }
+  .row { display: flex; gap: 12px; width: 100%; }
+  .row > * { flex: 1; }
+  button { font: inherit; cursor: pointer; }
+  .btn {
+    min-height: 48px; width: 100%; padding: 10px 24px; border-radius: 24px; font-weight: 600;
+    background: var(--primary); color: var(--on-primary); border: 1px solid var(--primary);
+  }
+  .btn.outline { background: transparent; color: var(--primary); border-color: var(--outline); }
+  .btn.link { background: none; border: 0; color: var(--primary); text-decoration: underline; width: auto; }
+  .btn:focus-visible, .card:focus-visible, input:focus-visible, textarea:focus-visible {
+    outline: 3px solid var(--primary); outline-offset: 2px;
+  }
+  label.field { display: flex; flex-direction: column; gap: 4px; width: 100%; text-align: left; font-weight: 600; }
+  input, textarea {
+    font: inherit; color: inherit; background: transparent; width: 100%;
+    border: 1px solid var(--outline); border-radius: 8px; padding: 12px;
+  }
+  textarea { resize: vertical; min-height: 3.5em; }
+  .banner {
+    background: var(--secondary-container); color: var(--on-secondary-container);
+    border-radius: 12px; padding: 8px 16px; font-weight: 600;
+  }
+  .card { width: 100%; padding: 0; border: 0; background: none; color: inherit; perspective: 1200px; }
+  .inner { display: grid; transition: transform .4s; transform-style: preserve-3d; }
+  .card[aria-pressed="true"] .inner { transform: rotateY(180deg); }
+  .face {
+    grid-area: 1 / 1; min-height: 280px; padding: 24px; border-radius: 16px; backface-visibility: hidden;
+    display: grid; place-items: center; font-size: 1.5rem; line-height: 1.35;
+    box-shadow: 0 1px 3px rgb(0 0 0 / .2), 0 2px 8px rgb(0 0 0 / .1);
+  }
+  .front { background: var(--primary-container); color: var(--on-primary-container); }
+  .back { background: var(--card-up); transform: rotateY(180deg); }
+  @media (prefers-reduced-motion: reduce) { .inner { transition: none; } }
+  .edit-bar {
+    position: sticky; bottom: 0; display: flex; gap: 12px; align-items: center;
+    padding: 12px 0; background: var(--bg); border-top: 1px solid var(--outline); margin-top: 16px;
+  }
+  .edit-bar .btn { width: auto; }
+  .status { flex: 1; color: var(--muted); }
+  .status.error { color: #BA1A1A; font-weight: 600; }
+  @media (prefers-color-scheme: dark) { .status.error { color: #FFB4AB; } }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+// shortcut: copy is duplicated from app/src/main/res/values/strings.xml; share it if the copy changes often.
+const COPY = {
+  themes: ['Light and personal history', 'Values and experiences', 'Vulnerability and connection'],
+  guidance: [
+    'Keep it light. There are no wrong answers.',
+    'Take your time, and listen as much as you share.',
+    'Go gently. Either of you may pass on any question, no explanation needed.',
+  ],
+};
+const SETS = 3, PER_SET = 12;
+const app = document.getElementById('app');
+const s = { screen: 'home', nameA: '', nameB: '', set: 1, order: 1, flipped: false, deck: [], dirty: false };
+
+const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const card = () => s.deck[(s.set - 1) * PER_SET + s.order - 1];
+const firstName = () => (s.order % 2 === 1 ? s.nameA : s.nameB); // A answers first on odd cards, B on even
+
+const screens = {
+  home: () => `
+    <h1 tabindex="-1">Closer Cards</h1>
+    <p>Take turns flipping cards across three sets of 12. Each set goes a little deeper. You both answer every card, and either of you can skip any card.</p>
+    <button class="btn" data-go="setup">Start</button>
+    <button class="btn link" data-go="edit">Edit deck</button>`,
+  setup: () => `
+    <h2 tabindex="-1">Who's playing?</h2>
+    <p>Names are optional.</p>
+    <label class="field">First player <input id="nameA" placeholder="Player A" autocomplete="off" value="${esc(s.nameA === 'Player A' ? '' : s.nameA)}"></label>
+    <label class="field">Second player <input id="nameB" placeholder="Player B" autocomplete="off" value="${esc(s.nameB === 'Player B' ? '' : s.nameB)}"></label>
+    <button class="btn" data-act="start">Start Set 1</button>`,
+  intro: () => `
+    <p class="label">Set ${s.set} of ${SETS}</p>
+    <h2 tabindex="-1">${COPY.themes[s.set - 1]}</h2>
+    <p>${COPY.guidance[s.set - 1]}</p>
+    <button class="btn" data-act="begin">Begin</button>`,
+  card: () => `
+    <p class="label" tabindex="-1">Set ${s.set} · Card ${s.order} of ${PER_SET}</p>
+    <p class="banner">${esc(firstName())} answers first</p>
+    <button class="card" data-act="flip" aria-pressed="false" aria-label="Face-down card. Tap to reveal the question.">
+      <span class="inner">
+        <span class="face front">Tap to reveal</span>
+        <span class="face back" aria-hidden="true">${esc(card().text)}</span>
+      </span>
+    </button>
+    <div class="row">
+      <button class="btn outline" data-act="next">Skip</button>
+      <button class="btn" data-act="next">Next</button>
+    </div>`,
+  setDone: () => `
+    <h2 tabindex="-1">Set ${s.set} complete</h2>
+    <p>Take a breath. Continue when you're both ready.</p>
+    <button class="btn" data-act="continue">Continue</button>
+    <button class="btn outline" data-go="done">End session</button>`,
+  done: () => `
+    <h2 tabindex="-1">That's the deck</h2>
+    <p>Thanks for playing. We hope you know each other a little better tonight.</p>
+    <button class="btn" data-go="setup">Play Again</button>`,
+  edit: () => `
+    <h2 tabindex="-1">Edit deck</h2>
+    <p>Changes save to <code>app/src/main/assets/cards.json</code>, the same deck the Android app uses.</p>
+    ${COPY.themes.map((theme, i) => `
+      <h3>Set ${i + 1}: ${theme}</h3>
+      ${s.deck.slice(i * PER_SET, (i + 1) * PER_SET).map((c) => `
+        <label class="field">Card ${c.order}
+          <textarea data-id="${esc(c.id)}" rows="2">${esc(c.text)}</textarea>
+        </label>`).join('')}`).join('')}
+    <div class="edit-bar">
+      <span class="status" id="status" role="status"></span>
+      <button class="btn outline" data-act="leaveEdit">Done</button>
+      <button class="btn" data-act="save">Save</button>
+    </div>`,
+};
+
+function show(screen) {
+  s.screen = screen;
+  app.className = screen === 'edit' ? 'edit' : '';
+  app.innerHTML = screens[screen]();
+  app.querySelector('[tabindex="-1"]')?.focus();
+}
+
+const actions = {
+  start() {
+    s.nameA = document.getElementById('nameA').value.trim() || 'Player A';
+    s.nameB = document.getElementById('nameB').value.trim() || 'Player B';
+    s.set = 1;
+    show('intro');
+  },
+  begin() { s.order = 1; s.flipped = false; show('card'); },
+  flip(btn) {
+    // Toggle in place so the CSS transition runs; a re-render would skip the animation.
+    s.flipped = !s.flipped;
+    btn.setAttribute('aria-pressed', s.flipped);
+    btn.querySelector('.front').setAttribute('aria-hidden', s.flipped);
+    btn.querySelector('.back').setAttribute('aria-hidden', !s.flipped);
+    if (s.flipped) btn.removeAttribute('aria-label');
+    else btn.setAttribute('aria-label', 'Face-down card. Tap to reveal the question.');
+  },
+  next() {
+    s.flipped = false;
+    if (s.order < PER_SET) { s.order++; show('card'); }
+    else show(s.set < SETS ? 'setDone' : 'done');
+  },
+  continue() { s.set++; show('intro'); },
+  async save() {
+    const status = document.getElementById('status');
+    const texts = Object.fromEntries([...app.querySelectorAll('textarea')].map((t) => [t.dataset.id, t.value]));
+    const deck = s.deck.map((c) => ({ ...c, text: texts[c.id].trim() }));
+    status.className = 'status';
+    status.textContent = 'Saving…';
+    try {
+      const res = await fetch('/cards.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(deck) });
+      const msg = await res.text();
+      if (!res.ok) throw new Error(msg);
+      s.deck = deck;
+      s.dirty = false;
+      status.textContent = 'Saved. Rebuild the app to see changes on the phone.';
+    } catch (e) {
+      status.className = 'status error';
+      status.textContent = `Not saved: ${e.message}`;
+    }
+  },
+  leaveEdit() {
+    if (s.dirty && !confirm('You have unsaved changes. Leave without saving?')) return;
+    s.dirty = false;
+    show('home');
+  },
+};
+
+app.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-go], [data-act]');
+  if (!el) return;
+  if (el.dataset.go) show(el.dataset.go);
+  else actions[el.dataset.act](el);
+});
+app.addEventListener('input', (e) => { if (e.target.matches('textarea')) s.dirty = true; });
+app.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.id === 'nameB') actions.start();
+  if (e.key === 'Enter' && e.target.id === 'nameA') document.getElementById('nameB').focus();
+});
+addEventListener('beforeunload', (e) => { if (s.dirty) e.preventDefault(); });
+
+fetch('/cards.json')
+  .then((r) => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
+  .then((cards) => {
+    s.deck = cards.sort((a, b) => a.set - b.set || a.order - b.order);
+    show('home');
+  })
+  .catch((e) => { app.innerHTML = `<h2>Couldn't load the deck</h2><p>${esc(e.message)}. Start it with <code>node web/server.mjs</code>.</p>`; });
+</script>
+</body>
+</html>
