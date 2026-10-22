@@ -98,6 +98,15 @@
 <body>
 <main id="app"></main>
 <script>
+// Set by web/export.mjs in the offline copy: file name -> parsed JSON. Absent when served by web/server.mjs.
+const STATIC = window.CLOSER_STATIC;
+const getJson = async (file) => {
+  if (STATIC) return STATIC[file];
+  const r = await fetch(`/${file}`);
+  if (!r.ok) throw new Error(`${file}: ${r.statusText}`);
+  return r.json();
+};
+
 // id -> entry from app/src/main/assets/decks.json (shared with the Android app), plus .cards once loaded.
 let DECKS = {};
 const SETS = 3, PER_SET = 12;
@@ -116,9 +125,9 @@ const screens = {
     ${Object.values(DECKS).map((d, i) => i === 0
       ? `<button class="btn" data-deck="${esc(d.id)}" data-go="setup">Start</button>`
       : `<button class="btn outline" data-deck="${esc(d.id)}" data-go="${d.consent ? 'consent' : 'setup'}">${esc(d.title)}</button>`).join('')}
-    <p>Edit questions:
+    ${STATIC ? '' : `<p>Edit questions:
       ${Object.values(DECKS).map((d) => `<button class="btn link" data-deck="${esc(d.id)}" data-go="edit" aria-label="Edit ${esc(d.title)} questions">${esc(d.title)}</button>`).join(' ')}
-    </p>`,
+    </p>`}`,
   consent: () => `
     <h2 tabindex="-1">${esc(deck().title)}</h2>
     <p>${esc(deck().consent)}</p>
@@ -176,9 +185,7 @@ const screens = {
 async function loadDeck(key) {
   const d = DECKS[key];
   if (!d.cards) {
-    const r = await fetch(`/${d.file}`);
-    if (!r.ok) throw new Error(`${d.title} deck: ${r.statusText}`);
-    d.cards = (await r.json()).sort((a, b) => a.set - b.set || a.order - b.order);
+    d.cards = (await getJson(d.file)).sort((a, b) => a.set - b.set || a.order - b.order);
   }
   s.deckId = key;
 }
@@ -241,7 +248,7 @@ const actions = {
 };
 
 const showError = (e) => {
-  app.innerHTML = `<h2>Couldn't load the decks</h2><p>${esc(e.message)}. Start the site with <code>node web/server.mjs</code>.</p>`;
+  app.innerHTML = `<h2>Couldn't load the decks</h2><p>${esc(e.message)}.${STATIC ? '' : ' Start the site with <code>node web/server.mjs</code>.'}</p>`;
 };
 
 app.addEventListener('click', async (e) => {
@@ -260,8 +267,7 @@ app.addEventListener('keydown', (e) => {
 });
 addEventListener('beforeunload', (e) => { if (s.dirty) e.preventDefault(); });
 
-fetch('/decks.json')
-  .then((r) => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
+getJson('decks.json')
   .then((list) => {
     DECKS = Object.fromEntries(list.map((d) => [d.id, d]));
     s.deckId = list[0].id;

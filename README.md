@@ -86,7 +86,16 @@ Play in a browser and edit the questions without a phone:
 node web/server.mjs
 ```
 
-Open http://127.0.0.1:8787. The **Edit questions** links on the home screen save straight to the deck files in `app/src/main/assets/`, the same files the app uses (rebuild the app to see changes on the phone). The server only listens on this computer, rejects decks that aren't 3 sets of 12, and needs nothing beyond Node. Tests: `node --test web/server.test.mjs`.
+Open http://127.0.0.1:8787. The **Edit questions** links on the home screen save straight to the deck files in `app/src/main/assets/`, the same files the app uses (rebuild the app to see changes on the phone). The server only listens on this computer, rejects decks that aren't 3 sets of 12, and needs nothing beyond Node. Tests: `node --test web/server.test.mjs web/export.test.mjs`.
+
+### Sharing a test copy
+
+```
+node web/export.mjs              # all decks
+node web/export.mjs --main-only  # leaves out the adult decks (any deck with a consent screen)
+```
+
+Writes `dist/closer-cards-web.zip`: one `index.html` with the decks baked in, plus a short `README.txt`. The recipient unzips it and double-clicks `index.html`. It needs no server or internet, and has no question editor. Re-run it after editing questions. Every deck is validated first, so a broken deck stops the export.
 
 ## Deck format
 
