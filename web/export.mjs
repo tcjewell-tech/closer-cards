@@ -54,7 +54,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   await mkdir(dir, { recursive: true });
   await writeFile(new URL('index.html', dir), buildPage(await readFile(new URL('web/index.html', ROOT), 'utf8'), data));
   await writeFile(new URL('README.txt', dir), readme(!mainOnly));
-  // shortcut: relies on Windows' bundled bsdtar (-a picks zip from the extension); use a zip library elsewhere.
-  execFileSync('tar', ['-a', '-cf', 'closer-cards-web.zip', 'closer-cards'], { cwd: asPath(dist) });
+  // Full path on purpose: Git for Windows puts GNU tar first on PATH, and it silently writes a tar, not a zip.
+  // shortcut: Windows-only (bsdtar ships with Windows 10+); use a zip library to build on other systems.
+  const bsdtar = `${process.env.SystemRoot ?? 'C:\\Windows'}\\System32\\tar.exe`;
+  execFileSync(bsdtar, ['-a', '-cf', 'closer-cards-web.zip', 'closer-cards'], { cwd: asPath(dist) });
+  const zip = await readFile(new URL('closer-cards-web.zip', dist));
+  if (zip.subarray(0, 4).toString('latin1') !== 'PK\x03\x04') throw new Error('Output is not a zip file; nothing to send');
   console.log(`Wrote ${asPath(new URL('closer-cards-web.zip', dist))} (${data['decks.json'].length} deck${data['decks.json'].length > 1 ? 's' : ''})`);
 }
