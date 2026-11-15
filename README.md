@@ -38,14 +38,16 @@ closer-cards/
 │   └── src/
 │       ├── main/
 │       │   ├── assets/cards.json      # the 36-card deck
-│       │   ├── java/.../ui/           # Compose screens
+│       │   ├── java/.../ui/           # Compose screens, ui/theme and ui/components (see docs/design-system.md)
+│       │   ├── res/font/              # Figtree and Newsreader (OFL, licences in assets/licenses)
 │       │   ├── java/.../model/        # Card, Player, Session state
 │       │   └── AndroidManifest.xml    # no INTERNET permission
 │       ├── test/                      # deck loading and turn-logic unit tests
 │       └── androidTest/               # full-session Compose UI test
 ├── docs/
 │   ├── closer-cards-spec-v1.0.docx    # product spec
-│   └── claude-code-prompt-v1.0.md     # MVP implementation prompt
+│   ├── claude-code-prompt-v1.0.md     # MVP implementation prompt
+│   └── design-system.md               # theme, components, fonts and how to use them
 ├── README.md
 ├── LICENSE
 └── .gitignore
