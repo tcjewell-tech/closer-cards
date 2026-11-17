@@ -12,7 +12,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -31,12 +30,11 @@ enum class CloserButtonVariant {
     Secondary,
 }
 
-/** Set inside a SetIntro block so buttons there stay legible on the set colour. */
-internal val LocalSetBlockColors = staticCompositionLocalOf<SetColors?> { null }
-
 /**
  * Pill button. One Primary per screen; Skip sits beside Next as Secondary.
  * Labels are sentence case. An icon never replaces the label.
+ * On a block of set colour, pass that set's [onSet] colours (SetIntro hands them to its actions)
+ * so the button stays legible and its edge stays visible against the set colour.
  */
 @Composable
 fun CloserButton(
@@ -45,14 +43,15 @@ fun CloserButton(
     modifier: Modifier = Modifier,
     variant: CloserButtonVariant = CloserButtonVariant.Primary,
     enabled: Boolean = true,
+    onSet: SetColors? = null,
     icon: (@Composable () -> Unit)? = null,
 ) {
     val colors = CloserTheme.colors
-    val onSet = LocalSetBlockColors.current
     val (container, content, border) = when (variant) {
         CloserButtonVariant.Primary ->
             if (onSet != null) {
-                Triple(colors.surfaceRaised, colors.ink, null)
+                // surfaceRaised alone is under 3:1 on set 1 (light) and set 3 (dark); the border keeps the pill's edge.
+                Triple(colors.surfaceRaised, colors.ink, BorderStroke(1.dp, onSet.content))
             } else {
                 Triple(colors.primary, colors.onPrimary, null)
             }

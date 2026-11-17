@@ -19,6 +19,8 @@ import com.tom.closercards.ui.theme.CloserCardsTheme
 import com.tom.closercards.ui.theme.CloserSpacing
 import com.tom.closercards.ui.theme.CloserTheme
 
+// Preview copy only; the app takes set titles and guidance from cards.json.
+
 @Composable
 private fun PreviewSurface(content: @Composable () -> Unit) {
     CloserCardsTheme {
@@ -51,6 +53,7 @@ private fun FlipCardPreview() = PreviewSurface {
         FlipCard(
             set = 2,
             card = 10,
+            totalCards = 12,
             question = "What does home mean to you?",
             flipped = flipped,
             onFlip = { flipped = it },
@@ -72,9 +75,9 @@ private fun TurnBannerPreview() = PreviewSurface {
 @Composable
 private fun SetProgressPreview() = PreviewSurface {
     Column(verticalArrangement = Arrangement.spacedBy(CloserSpacing.space4)) {
-        SetProgress(set = 1, card = 1)
-        SetProgress(set = 2, card = 5)
-        SetProgress(set = 3, card = 12)
+        SetProgress(set = 1, totalSets = 3, card = 1, totalCards = 12)
+        SetProgress(set = 2, totalSets = 3, card = 5, totalCards = 12)
+        SetProgress(set = 3, totalSets = 3, card = 12, totalCards = 12)
     }
 }
 
@@ -82,16 +85,29 @@ private fun SetProgressPreview() = PreviewSurface {
 @Composable
 private fun SetIntroPreview() = PreviewSurface {
     Column(verticalArrangement = Arrangement.spacedBy(CloserSpacing.space4)) {
-        SetIntro(set = 3) {
-            CloserButton("Start set 3", onClick = {}, modifier = Modifier.fillMaxWidth())
+        SetIntro(
+            set = 3,
+            totalSets = 3,
+            title = "Vulnerability and connection",
+            guidance = "Go as deep as feels right tonight.",
+            passNote = "Either of you may pass on any question.",
+        ) { colors ->
+            CloserButton("Start set 3", onClick = {}, modifier = Modifier.fillMaxWidth(), onSet = colors)
         }
-        SetIntro(set = 2, complete = true, guidance = "Take a breath. Carry on when you are both ready.") {
-            CloserButton("Continue", onClick = {}, modifier = Modifier.fillMaxWidth())
+        SetIntro(
+            set = 1,
+            totalSets = 3,
+            title = "Light and personal history",
+            guidance = "Take a breath. Carry on when you are both ready.",
+            complete = true,
+        ) { colors ->
+            CloserButton("Continue", onClick = {}, modifier = Modifier.fillMaxWidth(), onSet = colors)
             CloserButton(
                 "End session",
                 onClick = {},
                 modifier = Modifier.fillMaxWidth(),
                 variant = CloserButtonVariant.Secondary,
+                onSet = colors,
             )
         }
     }

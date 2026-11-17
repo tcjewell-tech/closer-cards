@@ -13,12 +13,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
+import com.tom.closercards.R
 import com.tom.closercards.ui.theme.CloserSpacing
 import com.tom.closercards.ui.theme.CloserTheme
 
@@ -27,16 +29,16 @@ import com.tom.closercards.ui.theme.CloserTheme
  * Done and current read by shape as well as colour. A skipped card counts as done.
  */
 @Composable
-fun SetProgress(set: Int, card: Int, modifier: Modifier = Modifier, total: Int = 12) {
+fun SetProgress(set: Int, totalSets: Int, card: Int, totalCards: Int, modifier: Modifier = Modifier) {
     val colors = CloserTheme.colors
-    val current = card.coerceIn(1, total)
-    val text = "Set $set of 3 · Card $current of $total"
+    val current = card.coerceIn(1, totalCards)
+    val text = stringResource(R.string.set_progress, set, totalSets, current, totalCards)
     Column(
         modifier.semantics(mergeDescendants = true) {
             progressBarRangeInfo = ProgressBarRangeInfo(
                 current = current.toFloat(),
-                range = 1f..total.toFloat(),
-                steps = (total - 2).coerceAtLeast(0),
+                range = 1f..totalCards.toFloat(),
+                steps = (totalCards - 2).coerceAtLeast(0),
             )
             stateDescription = text
         },
@@ -52,7 +54,7 @@ fun SetProgress(set: Int, card: Int, modifier: Modifier = Modifier, total: Int =
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            for (i in 1..total) {
+            for (i in 1..totalCards) {
                 val dot = Modifier
                     .size(width = if (i == current) 20.dp else 8.dp, height = 8.dp)
                     .clip(CircleShape)

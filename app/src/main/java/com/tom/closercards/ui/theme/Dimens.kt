@@ -38,10 +38,11 @@ object CloserSizes {
     val cardElevation = 8.dp
 }
 
-/** The flip: about 400ms, ease in-out, faces swap at 90 degrees. */
+/**
+ * The flip: about 400ms, ease in-out, faces swap at 90 degrees. With system animations off the
+ * faces swap instantly (Compose scales every animation by the same setting, so a fade would be 0ms anyway).
+ */
 object CloserMotion {
     const val FLIP_MILLIS = 400
-    /** Crossfade used instead of the flip when the system turns animations off. */
-    const val FADE_MILLIS = 200
     val FlipEasing = CubicBezierEasing(0.45f, 0f, 0.55f, 1f)
 }

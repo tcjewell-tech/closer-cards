@@ -11,6 +11,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 
 private val LocalCloserColors = staticCompositionLocalOf { LightCloserColors }
@@ -31,7 +32,10 @@ fun CloserCardsTheme(
         LocalCloserTypography provides typography,
     ) {
         MaterialTheme(
-            colorScheme = colors.toColorScheme(darkTheme),
+            colorScheme = colors.toColorScheme(
+                dark = darkTheme,
+                inversePrimary = (if (darkTheme) LightCloserColors else DarkCloserColors).primary,
+            ),
             typography = typography.toMaterial(),
             shapes = Shapes(
                 small = CloserShapes.small,
@@ -54,15 +58,47 @@ object CloserTheme {
         get() = LocalCloserTypography.current
 }
 
-private fun CloserColors.toColorScheme(dark: Boolean): ColorScheme {
+/**
+ * Every colour role is set from the system's tokens, so no stock M3 widget falls back to the
+ * baseline purple. The system has no error colour of its own; errors use primary.
+ */
+private fun CloserColors.toColorScheme(dark: Boolean, inversePrimary: Color): ColorScheme {
     val base = if (dark) darkColorScheme() else lightColorScheme()
     return base.copy(
         primary = primary,
         onPrimary = onPrimary,
+        primaryContainer = primary,
+        onPrimaryContainer = onPrimary,
+        inversePrimary = inversePrimary,
         secondary = set2,
         onSecondary = onSet2,
+        secondaryContainer = set2,
+        onSecondaryContainer = onSet2,
         tertiary = set3,
         onTertiary = onSet3,
+        tertiaryContainer = set3,
+        onTertiaryContainer = onSet3,
+        error = primary,
+        onError = onPrimary,
+        errorContainer = surfaceRaised,
+        onErrorContainer = primary,
+        inverseSurface = ink,
+        inverseOnSurface = surface,
+        surfaceTint = primary,
+        surfaceBright = surfaceRaised,
+        surfaceDim = surface,
+        primaryFixed = primary,
+        primaryFixedDim = primary,
+        onPrimaryFixed = onPrimary,
+        onPrimaryFixedVariant = onPrimary,
+        secondaryFixed = set2,
+        secondaryFixedDim = set2,
+        onSecondaryFixed = onSet2,
+        onSecondaryFixedVariant = onSet2,
+        tertiaryFixed = set3,
+        tertiaryFixedDim = set3,
+        onTertiaryFixed = onSet3,
+        onTertiaryFixedVariant = onSet3,
         background = surface,
         onBackground = ink,
         surface = surface,

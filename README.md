@@ -28,6 +28,14 @@ Inspired by research on structured self-disclosure and closeness (Aron et al., 1
 3. Build a debug APK: `./gradlew assembleDebug`
 4. Output: `app/build/outputs/apk/debug/app-debug.apk`
 
+From the command line, Gradle needs JDK 17 or newer (Android Studio's bundled JBR works) and the SDK location in `ANDROID_HOME` or `local.properties`.
+
+Checks:
+
+- `./gradlew testDebugUnitTest`: deck parsing and session logic (JVM, no device)
+- `./gradlew connectedDebugAndroidTest`: plays a full session through the UI on a connected device or emulator
+- `./gradlew lintDebug`: expected to report 0 errors and 0 warnings
+
 Release builds are signed locally for sideloading. Keystores and signing configs are never committed.
 
 ## Project structure
@@ -37,31 +45,47 @@ closer-cards/
 ├── app/
 │   └── src/
 │       ├── main/
-│       │   ├── assets/cards.json      # the 36-card deck
-│       │   ├── java/.../ui/           # Compose screens, ui/theme and ui/components (see docs/design-system.md)
-│       │   ├── res/font/              # Figtree and Newsreader (OFL, licences in assets/licenses)
-│       │   ├── java/.../model/        # Card, Player, Session state
-│       │   └── AndroidManifest.xml    # no INTERNET permission
-│       ├── test/                      # deck loading and turn-logic unit tests
+│       │   ├── assets/cards.json      # the deck: sets and their cards
+│       │   ├── java/com/tom/closercards/
+│       │   │   ├── MainActivity.kt    # theme + CloserCardsNavHost
+│       │   │   ├── model/             # Deck + DeckRepository (cards.json), Session, SessionReducer, TurnOrder
+│       │   │   └── ui/                # CloserCardsViewModel, CloserCardsNavHost, screens/, theme/, components/
+│       │   ├── res/                   # strings, day/night window themes, launcher icon, fonts, backup rules
+│       │   └── AndroidManifest.xml    # no permissions at all, INTERNET included
+│       ├── test/                      # deck and session unit tests
 │       └── androidTest/               # full-session Compose UI test
 ├── docs/
 │   ├── closer-cards-spec-v1.0.docx    # product spec
 │   ├── claude-code-prompt-v1.0.md     # MVP implementation prompt
 │   └── design-system.md               # theme, components, fonts and how to use them
 ├── README.md
-├── LICENSE
 └── .gitignore
 ```
 
+## How a session runs
+
+Home, Setup (optional names; blank ones become "Player A" and "Player B"), then for each set: Set intro, its cards, and a Set complete pause with Continue or End session. After the last set comes Session complete, whose Play again starts set 1 again with the same names.
+
+`CloserCardsViewModel` holds the session in memory and exposes it as a `StateFlow`; every transition is a pure function in `model/Session.kt` (`SessionReducer`), so the rules are unit-tested without Compose. Next and Skip move the same way (a skipped card counts as done). Turn order restarts in every set: Player A answers first on odd cards, Player B on even ones. System Back from any screen ends the session and returns Home.
+
 ## Deck format
 
-`app/src/main/assets/cards.json` is an array of cards. Edit it to change questions without touching code.
+`app/src/main/assets/cards.json` holds the sets and the cards. Edit it to change questions, set copy, the number of cards in a set or the number of sets, without touching code. The app checks the file at launch and stops with a message naming the problem if it is malformed.
 
 ```json
-[
-  { "id": "s1-01", "set": 1, "order": 1, "text": "What is a small thing that reliably makes your day better?" }
-]
+{
+  "sets": [
+    { "set": 1, "title": "Light and personal history", "guidance": "Keep it light; there are no wrong answers." },
+    { "set": 3, "title": "Vulnerability and connection", "guidance": "Go as deep as feels right tonight.",
+      "passNote": "Either of you may pass on any question." }
+  ],
+  "cards": [
+    { "id": "s1-01", "set": 1, "order": 1, "text": "What is a small thing that reliably makes your day better?" }
+  ]
+}
 ```
+
+Rules: sets are numbered 1 to N; `passNote` is optional and shown on that set's intro; every card has a unique `id`, belongs to a listed set, has an `order` unique within its set, and has text. Cards play in `order` within each set. Only three set colours exist, so a fourth set would reuse set 1's colour.
 
 ## Roadmap
 

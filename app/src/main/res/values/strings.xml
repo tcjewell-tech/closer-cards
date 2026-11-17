@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">Closer Cards</string>
+
+    <!-- Home -->
+    <string name="home_tagline">Share one phone, take turns, and trade questions that get a little closer with every set.</string>
+    <string name="start">Start</string>
+
+    <!-- Setup -->
+    <string name="setup_title">Who is playing?</string>
+    <string name="setup_hint">Names are optional.</string>
+    <string name="name_first_label">First player</string>
+    <string name="name_second_label">Second player</string>
+    <!-- Used when a name is left blank, and as the field placeholders. -->
+    <string name="player_a_default">Player A</string>
+    <string name="player_b_default">Player B</string>
+
+    <!-- Sets -->
+    <string name="start_set">Start set %1$d</string>
+    <string name="set_of">Set %1$d of %2$d</string>
+    <!-- An ordinal ("set 2"), not a count, so no plural. -->
+    <string name="set_complete" tools:ignore="PluralsCandidate">Set %1$d complete</string>
+    <string name="set_complete_guidance">Take a breath. Carry on when you are both ready.</string>
+    <string name="continue_session">Continue</string>
+    <string name="end_session">End session</string>
+
+    <!-- Card -->
+    <string name="set_progress">Set %1$d of %2$d · Card %3$d of %4$d</string>
+    <string name="card_position">Set %1$d · Card %2$d of %3$d</string>
+    <string name="card_hint">Tap to reveal</string>
+    <string name="card_hidden_description">%1$s. Tap to reveal the question</string>
+    <string name="card_revealed_description">%1$s. %2$s</string>
+    <string name="card_reveal_action">Reveal question</string>
+    <string name="card_hide_action">Hide question</string>
+    <string name="turn_banner">%1$s answers first</string>
+    <string name="next">Next</string>
+    <string name="skip">Skip</string>
+
+    <!-- Session complete -->
+    <string name="session_complete_title">Thank you for tonight</string>
+    <string name="session_complete_body">Before you put the phone down, tell each other one thing you will remember from this conversation.</string>
+    <string name="play_again">Play again</string>
+</resources>
