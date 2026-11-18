@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mirrors LightCloserColors.surface in ui/theme/Color.kt. -->
+    <color name="window_background">#FAF5EE</color>
+    <!-- Launcher icon: primary and surfaceRaised (light) and set1. -->
+    <color name="ic_launcher_background">#8A2E4A</color>
+</resources>

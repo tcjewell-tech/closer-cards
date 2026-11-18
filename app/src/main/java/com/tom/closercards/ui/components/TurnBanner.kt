@@ -14,10 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.tom.closercards.R
 import com.tom.closercards.ui.theme.CloserShapes
 import com.tom.closercards.ui.theme.CloserSizes
 import com.tom.closercards.ui.theme.CloserSpacing
@@ -25,8 +27,7 @@ import com.tom.closercards.ui.theme.CloserTheme
 
 /**
  * Says who answers first on the current card, in the set colour.
- * Pass the Setup name, or "Player A" / "Player B" when it was left blank:
- * Player A goes first on odd cards, Player B on even cards.
+ * Pass the name the session resolved (model/TurnOrder.kt decides whose turn it is).
  */
 @Composable
 fun TurnBanner(set: Int, name: String, modifier: Modifier = Modifier) {
@@ -48,6 +49,10 @@ fun TurnBanner(set: Int, name: String, modifier: Modifier = Modifier) {
                 .clip(CircleShape)
                 .background(setColors.content),
         )
-        Text("$name answers first", style = CloserTheme.typography.banner, color = setColors.content)
+        Text(
+            stringResource(R.string.turn_banner, name),
+            style = CloserTheme.typography.banner,
+            color = setColors.content,
+        )
     }
 }
