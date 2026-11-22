@@ -1,8 +1,14 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
+
+// Release signing comes from keystore.properties (git-ignored). Without it, release builds come out unsigned.
+val keystoreFile = rootProject.file("keystore.properties")
+val keystore = Properties().apply { if (keystoreFile.exists()) keystoreFile.inputStream().use(::load) }
 
 android {
     namespace = "com.tom.closercards"
@@ -13,8 +19,26 @@ android {
         minSdk = 26
         targetSdk = 37
         versionCode = 1
-        versionName = "0.1"
+        versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        if (keystoreFile.exists()) create("release") {
+            storeFile = rootProject.file(keystore.getProperty("storeFile"))
+            storePassword = keystore.getProperty("storePassword")
+            keyAlias = keystore.getProperty("keyAlias")
+            keyPassword = keystore.getProperty("keyPassword")
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            signingConfig = signingConfigs.findByName("release")
+        }
     }
 
     buildFeatures {

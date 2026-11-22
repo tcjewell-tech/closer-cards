@@ -36,7 +36,21 @@ Checks:
 - `./gradlew connectedDebugAndroidTest`: plays a full session through the UI on a connected device or emulator
 - `./gradlew lintDebug`: expected to report 0 errors and 0 warnings
 
-Release builds are signed locally for sideloading. Keystores and signing configs are never committed.
+### Release build
+
+Release builds are shrunk with R8 and signed locally for sideloading. Keystores and `keystore.properties` are git-ignored and never committed.
+
+1. Create a keystore once, in the repo root (keytool asks for a password; keep the file and password backed up, since updates must be signed with the same key):
+   `keytool -genkeypair -v -keystore closer-cards.jks -alias closer-cards -keyalg RSA -keysize 2048 -validity 10000`
+2. Create `keystore.properties` in the repo root:
+   ```
+   storeFile=closer-cards.jks
+   storePassword=<your password>
+   keyAlias=closer-cards
+   keyPassword=<your password>
+   ```
+3. `./gradlew assembleRelease`
+4. Output: `app/build/outputs/apk/release/app-release.apk`. Without `keystore.properties` the build still works but produces `app-release-unsigned.apk`, which will not install.
 
 ## Project structure
 
