@@ -38,7 +38,8 @@ fun TurnBanner(set: Int, name: String, modifier: Modifier = Modifier) {
             .heightIn(min = CloserSizes.touchTarget)
             .clip(CloserShapes.small)
             .background(setColors.container)
-            .padding(horizontal = CloserSpacing.space4)
+            // Vertical padding only shows once the text wraps (long name, large font).
+            .padding(horizontal = CloserSpacing.space4, vertical = CloserSpacing.space2)
             .semantics { liveRegion = LiveRegionMode.Polite },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(CloserSpacing.space2),
