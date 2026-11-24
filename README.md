@@ -53,6 +53,10 @@ Release builds are shrunk with R8 and signed locally for sideloading. Keystores 
 3. `./gradlew assembleRelease`
 4. Output: `app/build/outputs/apk/release/app-release.apk`. Without `keystore.properties` the build still works but produces `app-release-unsigned.apk`, which will not install.
 
+### Google Play
+
+Play takes an app bundle, not an APK: `./gradlew bundleRelease` writes `app/build/outputs/bundle/release/app-release.aab`, signed with the same keystore (it becomes the Play upload key). Raise `versionCode` in `app/build.gradle.kts` for every upload. Listing text, the privacy policy and the store graphics are in `docs/play-store/`.
+
 ## Project structure
 
 ```

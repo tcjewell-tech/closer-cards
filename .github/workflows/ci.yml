@@ -18,5 +18,5 @@ jobs:
           distribution: temurin
           java-version: 25 # matches Android Studio's bundled JBR used locally
       - uses: gradle/actions/setup-gradle@v6
-      # No keystore in CI, so the release APK is unsigned; this still proves R8 shrinking builds.
-      - run: ./gradlew testDebugUnitTest lintDebug assembleRelease
+      # No keystore in CI, so the release APK and Play bundle are unsigned; this still proves R8 shrinking builds.
+      - run: ./gradlew testDebugUnitTest lintDebug assembleRelease bundleRelease
