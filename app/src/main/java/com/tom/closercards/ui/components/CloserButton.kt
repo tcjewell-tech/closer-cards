@@ -14,13 +14,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.tom.closercards.ui.theme.CloserShapes
 import com.tom.closercards.ui.theme.CloserSizes
 import com.tom.closercards.ui.theme.CloserSpacing
 import com.tom.closercards.ui.theme.CloserTheme
 import com.tom.closercards.ui.theme.SetColors
+
+/** How far the not-yet-shaded part of a button is mixed towards the page colour. At 0.25 the label stays above 4.5:1 on it. */
+private const val FILL_WASH = 0.25f
 
 enum class CloserButtonVariant {
     /** The one main action per screen: Start, Next, Continue, Play again. */
@@ -35,6 +44,8 @@ enum class CloserButtonVariant {
  * Labels are sentence case. An icon never replaces the label.
  * On a block of set colour, pass that set's [onSet] colours (SetIntro hands them to its actions)
  * so the button stays legible and its edge stays visible against the set colour.
+ * [fill] shades the pill in from the start edge: the fraction (0 to 1) it returns is at full colour and
+ * the rest is washed out. It is read while drawing, so a changing value does not recompose the button.
  */
 @Composable
 fun CloserButton(
@@ -45,6 +56,7 @@ fun CloserButton(
     enabled: Boolean = true,
     onSet: SetColors? = null,
     icon: (@Composable () -> Unit)? = null,
+    fill: (() -> Float)? = null,
 ) {
     val colors = CloserTheme.colors
     val (container, content, border) = when (variant) {
@@ -66,11 +78,25 @@ fun CloserButton(
             .focusRing(CloserShapes.pill, onSet?.content ?: colors.primary)
             .alpha(if (enabled) 1f else 0.45f)
             .heightIn(min = CloserSizes.buttonHeight)
-            .widthIn(min = CloserSizes.touchTarget),
+            .widthIn(min = CloserSizes.touchTarget)
+            .then(
+                if (fill == null) {
+                    Modifier
+                } else {
+                    // Drawn under the label (the Button's own container is transparent below), so the label keeps its colour.
+                    val washed = lerp(container, colors.surface, FILL_WASH)
+                    Modifier.clip(CloserShapes.pill).drawBehind {
+                        drawRect(washed)
+                        val full = size.width * fill().coerceIn(0f, 1f)
+                        val left = if (layoutDirection == LayoutDirection.Rtl) size.width - full else 0f
+                        drawRect(container, topLeft = Offset(left, 0f), size = Size(full, size.height))
+                    }
+                },
+            ),
         enabled = enabled,
         shape = CloserShapes.pill,
         colors = ButtonDefaults.buttonColors(
-            containerColor = container,
+            containerColor = if (fill == null) container else Color.Transparent,
             contentColor = content,
             disabledContainerColor = container,
             disabledContentColor = content,

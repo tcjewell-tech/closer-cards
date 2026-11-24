@@ -15,6 +15,14 @@
     <string name="player_a_default">Player A</string>
     <string name="player_b_default">Player B</string>
 
+    <!-- Setup: the optional countdown that shades in Next on each question. -->
+    <string name="timer_label">Timer for each question</string>
+    <string name="timer_hint">Next fills in as the time passes. You can move on whenever you like.</string>
+    <string name="timer_off">Off</string>
+    <string name="timer_short">1.5 min</string>
+    <string name="timer_medium">3 min</string>
+    <string name="timer_long">5 min</string>
+
     <!-- Sets -->
     <string name="start_set">Start set %1$d</string>
     <string name="set_of">Set %1$d of %2$d</string>

@@ -94,6 +94,18 @@ class SessionReducerTest {
     }
 
     @Test
+    fun timerFillsOverItsLengthAndPlayAgainKeepsTheChoice() {
+        assertEquals(0f, QuestionTimer.Short.fill(0), 0f)
+        assertEquals(0.5f, QuestionTimer.Short.fill(45_000), 0.001f)
+        assertEquals(1f, QuestionTimer.Long.fill(999_000), 0f)
+        assertEquals(0f, QuestionTimer.Off.fill(999_000), 0f)
+
+        val begun = reducer.begin(reducer.openSetup(Session()), PlayerNames.resolve("", ""), QuestionTimer.Long)
+        val ended = reducer.endSession(reducer.skip(reducer.skip(reducer.skip(reducer.startSet(begun)))))
+        assertEquals(QuestionTimer.Long, reducer.playAgain(ended).timer)
+    }
+
+    @Test
     fun actionsOutsideTheirPhaseChangeNothing() {
         val done = reducer.endSession(reducer.skip(reducer.skip(reducer.skip(inCard()))))
         assertEquals(done, reducer.advance(done))

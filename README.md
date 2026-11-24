@@ -9,6 +9,7 @@ Inspired by research on structured self-disclosure and closeness (Aron et al., 1
 - 36 original questions in 3 escalating sets of 12 (light, values, vulnerability)
 - Tap-to-flip card with a turn banner that alternates who answers first
 - Optional player names
+- Optional timer for each question (off, 1.5, 3 or 5 minutes) that shades in Next as a pacing cue; Next works at any time
 - Skip on every card; Set 3 reminds players that either person may pass
 - Set intro and set-complete screens, progress indicator, session-complete screen
 - Fully offline: no INTERNET permission, no accounts, no analytics, no ads
@@ -78,7 +79,7 @@ closer-cards/
 
 ## How a session runs
 
-Home, Setup (optional names; blank ones become "Player A" and "Player B"), then for each set: Set intro, its cards, and a Set complete pause with Continue or End session. After the last set comes Session complete, whose Play again starts set 1 again with the same names.
+Home, Setup (optional names; blank ones become "Player A" and "Player B"; a timer choice that is not saved between launches), then for each set: Set intro, its cards, and a Set complete pause with Continue or End session. After the last set comes Session complete, whose Play again starts set 1 again with the same names.
 
 `CloserCardsViewModel` holds the session in memory and exposes it as a `StateFlow`; every transition is a pure function in `model/Session.kt` (`SessionReducer`), so the rules are unit-tested without Compose. Next and Skip move the same way (a skipped card counts as done). Turn order restarts in every set: Player A answers first on odd cards, Player B on even ones. System Back from any screen ends the session and returns Home.
 
