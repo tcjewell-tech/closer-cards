@@ -17,8 +17,8 @@ Inspired by research on structured self-disclosure and closeness (Aron et al., 1
 ## Tech stack
 
 - Kotlin, Jetpack Compose, Material 3
-- Single activity, Navigation Compose
-- MVVM with ViewModel and StateFlow (in-memory session state)
+- Single activity; the screen is chosen from the session's phase (no navigation library)
+- MVVM with ViewModel and StateFlow; session state is kept in `SavedStateHandle` (in memory, never on disk)
 - kotlinx.serialization for the bundled deck
 - minSdk 26
 
@@ -85,7 +85,7 @@ closer-cards/
 
 Home, Setup (optional names; blank ones become "Player A" and "Player B"; a timer choice that is not saved between launches), then for each set: Set intro, its cards, and a Set complete pause with Continue or End session. After the last set comes Session complete, whose Play again starts set 1 again with the same names.
 
-`CloserCardsViewModel` holds the session in memory and exposes it as a `StateFlow`; every transition is a pure function in `model/Session.kt` (`SessionReducer`), so the rules are unit-tested without Compose. Next and Skip move the same way (a skipped card counts as done). Turn order restarts in every set: Player A answers first on odd cards, Player B on even ones. System Back from any screen ends the session and returns Home.
+`CloserCardsViewModel` holds the session and exposes it as a `StateFlow`; `CloserCardsNavHost` shows the screen for its phase, with a short crossfade (none when system animations are off). The session is mirrored into `SavedStateHandle`, so if Android kills the app in the background mid-session it comes back on the same card; closing the app from Recents ends it, and nothing is written to disk or backup. Every transition is a pure function in `model/Session.kt` (`SessionReducer`), so the rules are unit-tested without Compose. Next and Skip move the same way (a skipped card counts as done). Turn order restarts in every set: Player A answers first on odd cards, Player B on even ones. System Back from any screen ends the session and returns Home.
 
 ## Deck format
 
