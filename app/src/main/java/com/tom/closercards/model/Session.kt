@@ -100,6 +100,12 @@ class SessionReducer(private val deck: Deck) {
     /** Back from any screen: the session ends and Home starts a new one. */
     fun home() = Session()
 
+    /** Pulls a restored session's indices back inside this deck, in case cards.json changed since it was saved. */
+    fun fitToDeck(s: Session): Session {
+        val setIndex = s.setIndex.coerceIn(0, deck.sets.lastIndex)
+        return s.copy(setIndex = setIndex, cardIndex = s.cardIndex.coerceIn(0, deck.sets[setIndex].cards.lastIndex))
+    }
+
     fun currentSet(s: Session): CardSet = deck.sets[s.setIndex]
 
     fun currentCard(s: Session): Card = currentSet(s).cards[s.cardIndex]

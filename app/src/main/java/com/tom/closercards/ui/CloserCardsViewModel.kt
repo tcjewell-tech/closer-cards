@@ -1,5 +1,6 @@
 package com.tom.closercards.ui
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.tom.closercards.model.Deck
 import com.tom.closercards.model.Phase
@@ -28,10 +29,18 @@ data class SessionUiState(
     val timer: QuestionTimer,
 )
 
-/** Holds the session in memory (nothing is saved) and applies [SessionReducer] for each action. */
-class CloserCardsViewModel(private val deck: Deck) : ViewModel() {
+/**
+ * Holds the session and applies [SessionReducer] for each action.
+ * The session is mirrored into [savedStateHandle], which Android keeps in memory for this task only:
+ * it survives the process being killed in the background, never reaches disk or backup, and is
+ * dropped when the task is closed.
+ */
+class CloserCardsViewModel(
+    private val deck: Deck,
+    private val savedStateHandle: SavedStateHandle,
+) : ViewModel() {
     private val reducer = SessionReducer(deck)
-    private var session = Session()
+    private var session = reducer.fitToDeck(savedStateHandle.toSession())
     private val _state = MutableStateFlow(uiState())
     val state: StateFlow<SessionUiState> = _state.asStateFlow()
 
@@ -49,6 +58,7 @@ class CloserCardsViewModel(private val deck: Deck) : ViewModel() {
     // Called on the main thread only, from click handlers.
     private fun update(change: (Session) -> Session) {
         session = change(session)
+        savedStateHandle.save(session)
         _state.value = uiState()
     }
 
@@ -71,4 +81,35 @@ class CloserCardsViewModel(private val deck: Deck) : ViewModel() {
             timer = session.timer,
         )
     }
+}
+
+private const val PHASE = "phase"
+private const val NAME_A = "nameA"
+private const val NAME_B = "nameB"
+private const val TIMER = "timer"
+private const val SET = "setIndex"
+private const val CARD = "cardIndex"
+private const val FLIPPED = "flipped"
+
+private fun SavedStateHandle.save(s: Session) {
+    set(PHASE, s.phase.name)
+    set(NAME_A, s.names.a)
+    set(NAME_B, s.names.b)
+    set(TIMER, s.timer.name)
+    set(SET, s.setIndex)
+    set(CARD, s.cardIndex)
+    set(FLIPPED, s.flipped)
+}
+
+/** The saved session, or a fresh one. A value this version doesn't recognise falls back to its default. */
+private fun SavedStateHandle.toSession(): Session {
+    val fresh = Session()
+    return Session(
+        phase = get<String>(PHASE)?.let { name -> Phase.entries.firstOrNull { it.name == name } } ?: fresh.phase,
+        names = PlayerNames(get<String>(NAME_A) ?: fresh.names.a, get<String>(NAME_B) ?: fresh.names.b),
+        timer = get<String>(TIMER)?.let { name -> QuestionTimer.entries.firstOrNull { it.name == name } } ?: fresh.timer,
+        setIndex = get<Int>(SET) ?: fresh.setIndex,
+        cardIndex = get<Int>(CARD) ?: fresh.cardIndex,
+        flipped = get<Boolean>(FLIPPED) ?: fresh.flipped,
+    )
 }
