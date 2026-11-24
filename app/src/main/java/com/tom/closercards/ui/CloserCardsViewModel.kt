@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.tom.closercards.model.Deck
 import com.tom.closercards.model.Phase
 import com.tom.closercards.model.PlayerNames
+import com.tom.closercards.model.QuestionTimer
 import com.tom.closercards.model.Session
 import com.tom.closercards.model.SessionReducer
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +25,7 @@ data class SessionUiState(
     val question: String,
     val firstName: String,
     val flipped: Boolean,
+    val timer: QuestionTimer,
 )
 
 /** Holds the session in memory (nothing is saved) and applies [SessionReducer] for each action. */
@@ -34,7 +36,7 @@ class CloserCardsViewModel(private val deck: Deck) : ViewModel() {
     val state: StateFlow<SessionUiState> = _state.asStateFlow()
 
     fun start() = update(reducer::openSetup)
-    fun begin(names: PlayerNames) = update { reducer.begin(it, names) }
+    fun begin(names: PlayerNames, timer: QuestionTimer) = update { reducer.begin(it, names, timer) }
     fun startSet() = update(reducer::startSet)
     fun flip(flipped: Boolean) = update { reducer.flip(it, flipped) }
     fun next() = update(reducer::advance)
@@ -66,6 +68,7 @@ class CloserCardsViewModel(private val deck: Deck) : ViewModel() {
             question = card.text,
             firstName = reducer.firstName(session),
             flipped = session.flipped,
+            timer = session.timer,
         )
     }
 }

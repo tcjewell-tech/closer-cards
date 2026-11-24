@@ -52,7 +52,7 @@ fun CloserCardsNavHost() {
         exitTransition = { ExitTransition.None },
     ) {
         composable(Phase.Home.name) { HomeScreen(onStart = { go(viewModel::start) }) }
-        composable(Phase.Setup.name) { SetupScreen(onBegin = { names -> go { viewModel.begin(names) } }) }
+        composable(Phase.Setup.name) { SetupScreen(onBegin = { names, timer -> go { viewModel.begin(names, timer) } }) }
         composable(Phase.SetIntro.name) { SetIntroScreen(state, onStart = { go(viewModel::startSet) }) }
         composable(Phase.Card.name) {
             CardScreen(state, onFlip = viewModel::flip, onNext = { go(viewModel::next) }, onSkip = { go(viewModel::skip) })

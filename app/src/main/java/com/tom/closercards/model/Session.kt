@@ -34,10 +34,20 @@ object TurnOrder {
     }
 }
 
+/** The optional countdown for each question, chosen on Setup. It only paces: Next works at any time. */
+enum class QuestionTimer(val seconds: Int) {
+    Off(0), Short(90), Medium(180), Long(300);
+
+    /** How much of Next is shaded in once a question has been face up for [elapsedMillis]: 0 to 1. */
+    fun fill(elapsedMillis: Long): Float =
+        if (seconds == 0) 0f else (elapsedMillis / (seconds * 1000f)).coerceIn(0f, 1f)
+}
+
 /** Where a session stands. Indices are 0-based into [Deck.sets] and that set's cards. */
 data class Session(
     val phase: Phase = Phase.Home,
     val names: PlayerNames = PlayerNames.resolve("", ""),
+    val timer: QuestionTimer = QuestionTimer.Short,
     val setIndex: Int = 0,
     val cardIndex: Int = 0,
     val flipped: Boolean = false,
@@ -52,8 +62,8 @@ class SessionReducer(private val deck: Deck) {
 
     fun openSetup(s: Session) = if (s.phase == Phase.Home) s.copy(phase = Phase.Setup) else s
 
-    fun begin(s: Session, names: PlayerNames) =
-        if (s.phase == Phase.Setup) Session(phase = Phase.SetIntro, names = names) else s
+    fun begin(s: Session, names: PlayerNames, timer: QuestionTimer = QuestionTimer.Short) =
+        if (s.phase == Phase.Setup) Session(phase = Phase.SetIntro, names = names, timer = timer) else s
 
     fun startSet(s: Session) =
         if (s.phase == Phase.SetIntro) s.copy(phase = Phase.Card, cardIndex = 0, flipped = false) else s
@@ -83,9 +93,9 @@ class SessionReducer(private val deck: Deck) {
 
     fun endSession(s: Session) = if (s.phase == Phase.SetComplete) s.copy(phase = Phase.SessionComplete) else s
 
-    /** Same players, fresh deck: straight to the first set's intro. */
+    /** Same players and timer, fresh deck: straight to the first set's intro. */
     fun playAgain(s: Session) =
-        if (s.phase == Phase.SessionComplete) Session(phase = Phase.SetIntro, names = s.names) else s
+        if (s.phase == Phase.SessionComplete) Session(phase = Phase.SetIntro, names = s.names, timer = s.timer) else s
 
     /** Back from any screen: the session ends and Home starts a new one. */
     fun home() = Session()
