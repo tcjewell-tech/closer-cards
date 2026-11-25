@@ -35,14 +35,13 @@ class DeckTest {
     }
 
     @Test
-    fun everyDeckInDecksJsonLoads() {
+    fun appBundlesOnlyTheMainDeck() {
         val infos = loadDeckInfos(File("src/main/assets/decks.json").readText())
-        assertEquals(listOf("main", "after-dark", "after-darker"), infos.map { it.id })
+        assertEquals(listOf("main"), infos.map { it.id })
         assertEquals("cards.json", infos.first().file)
-        val ids = infos.flatMap { loadDeck(File("src/main/assets/${it.file}").readText()) }.map { it.id }
-        assertEquals("card ids must be unique across decks", ids.size, ids.toSet().size)
-        assertTrue("main deck has no consent screen", infos.first().consent == null)
-        assertTrue("adult decks need a consent screen", infos.drop(1).all { !it.consent.isNullOrBlank() })
+        assertTrue("a deck with a consent screen is an adult deck and belongs in web/decks/", infos.none { it.consent != null })
+        // Everything in assets/ ships inside the APK, so a stray deck file here would ship too.
+        assertEquals(listOf("cards.json", "decks.json"), File("src/main/assets").list()!!.sorted())
     }
 
     @Test(expected = IllegalArgumentException::class)

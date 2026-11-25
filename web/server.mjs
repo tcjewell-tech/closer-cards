@@ -4,11 +4,16 @@ import { createServer } from 'node:http';
 import { readFile, writeFile, rename } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-// The app's assets are the single source: decks.json lists the decks, one cards file each.
-const ASSETS = new URL('../app/src/main/assets/', import.meta.url);
-const asset = (name) => fileURLToPath(new URL(name, ASSETS));
-// Only files named in decks.json are served or written, so no other path is reachable.
-const deckFiles = async () => JSON.parse(await readFile(asset('decks.json'), 'utf8')).map((d) => `/${d.file}`);
+// Each folder has a decks.json listing its decks, one cards file each. The app's assets hold what the
+// Android app ships. web/decks/ holds the adult decks, kept outside app/ so no Android build can bundle them.
+const DECK_DIRS = [new URL('../app/src/main/assets/', import.meta.url), new URL('./decks/', import.meta.url)];
+
+/** Every deck in home-screen order (app decks first), each with the URL of its cards file. */
+export async function listDecks() {
+  const lists = await Promise.all(DECK_DIRS.map(async (dir) =>
+    JSON.parse(await readFile(new URL('decks.json', dir), 'utf8')).map((deck) => ({ deck, url: new URL(deck.file, dir) }))));
+  return lists.flat();
+}
 const PAGE = fileURLToPath(new URL('./index.html', import.meta.url));
 const PORT = Number(process.env.PORT) || 8787;
 const MAX_BODY = 64 * 1024;
@@ -52,11 +57,14 @@ async function handle(req, res) {
   if (!ALLOWED_HOSTS.has(req.headers.host)) return send(403, 'Forbidden');
 
   if (req.method === 'GET' && req.url === '/') return send(200, await readFile(PAGE), 'text/html; charset=utf-8');
+  const decks = await listDecks();
   if (req.method === 'GET' && req.url === '/decks.json') {
-    return send(200, await readFile(asset('decks.json')), 'application/json; charset=utf-8');
+    return send(200, JSON.stringify(decks.map((d) => d.deck)), 'application/json; charset=utf-8');
   }
-  if (!(await deckFiles()).includes(req.url)) return send(404, 'Not found');
-  const deckFile = asset(req.url.slice(1));
+  // Only files named in a decks.json are served or written, so no other path is reachable.
+  const found = decks.find((d) => `/${d.deck.file}` === req.url);
+  if (!found) return send(404, 'Not found');
+  const deckFile = fileURLToPath(found.url);
   if (req.method === 'GET') return send(200, await readFile(deckFile), 'application/json; charset=utf-8');
   if (req.method !== 'PUT') return send(405, 'Method not allowed');
 

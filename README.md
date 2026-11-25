@@ -7,7 +7,7 @@ Inspired by research on structured self-disclosure and closeness (Aron et al., 1
 ## Features (MVP, v1.0)
 
 - 36 original questions in 3 escalating sets of 12 (light, values, vulnerability)
-- Two optional adult decks, **After Dark** (explicit) and **After Darker** (kink/BDSM), each behind a consent screen and with its own dark palette
+- Web version only: two optional adult decks, **After Dark** (explicit) and **After Darker** (kink/BDSM), each behind a consent screen and with its own dark palette. The Android app ships the main deck only
 - Tap-to-flip card with a turn banner that alternates who answers first
 - Optional player names
 - Skip on every card; Set 3 reminds players that either person may pass
@@ -59,8 +59,8 @@ closer-cards/
 ├── app/
 │   └── src/
 │       ├── main/
-│       │   ├── assets/decks.json      # deck list: titles, set themes, guidance, consent text
-│       │   ├── assets/cards*.json     # one 36-card file per deck
+│       │   ├── assets/decks.json      # the app's deck list: title, set themes, guidance
+│       │   ├── assets/cards.json      # the main deck's 36 cards
 │       │   ├── java/com/tom/closercards/
 │       │   │   ├── MainActivity.kt    # NavHost: home, setup, play
 │       │   │   ├── SessionViewModel.kt
@@ -70,6 +70,8 @@ closer-cards/
 │       │   └── AndroidManifest.xml    # no permissions at all
 │       ├── test/                      # deck loading and turn-logic unit tests
 │       └── androidTest/               # full-session Compose UI test
+├── web/                               # browser version, question editor, offline export
+│   └── decks/                         # adult decks (web only, never in the Android app)
 ├── gradle/libs.versions.toml          # dependency versions
 ├── docs/
 │   ├── closer-cards-spec-v1.0.docx    # product spec
@@ -86,7 +88,7 @@ Play in a browser and edit the questions without a phone:
 node web/server.mjs
 ```
 
-Open http://127.0.0.1:8787. The **Edit questions** links on the home screen save straight to the deck files in `app/src/main/assets/`, the same files the app uses (rebuild the app to see changes on the phone). The server only listens on this computer, rejects decks that aren't 3 sets of 12, and needs nothing beyond Node. Tests: `node --test web/server.test.mjs web/export.test.mjs`.
+Open http://127.0.0.1:8787. The **Edit questions** links on the home screen save straight to the deck files. The main deck is in `app/src/main/assets/`, the same file the app uses (rebuild the app to see changes on the phone). The adult decks are in `web/decks/`. The server only listens on this computer, rejects decks that aren't 3 sets of 12, and needs nothing beyond Node. Tests: `node --test web/server.test.mjs web/export.test.mjs`.
 
 ### Sharing a test copy
 
@@ -99,7 +101,12 @@ Writes `dist/closer-cards-web.zip`: one `index.html` with the decks baked in, pl
 
 ## Deck format
 
-`app/src/main/assets/decks.json` lists the decks in home-screen order (the first is the main game). Each entry names its cards file, three set themes, three guidance lines and, for adult decks, the consent text. Each cards file is an array of cards; edit it to change questions without touching code. Every deck must be exactly 3 sets with orders 1 to 12, and the app crashes on launch with a clear message if one doesn't match (`DeckTest` catches this first).
+Two folders hold decks, each with a `decks.json` that lists its decks in home-screen order:
+
+- `app/src/main/assets/` holds what the Android app ships: the main deck only.
+- `web/decks/` holds the adult decks. Only the web version reads it.
+
+Everything in `app/src/main/assets/` is packed into the app, so never put an adult deck there (`DeckTest` fails if you do). Each `decks.json` entry names its cards file, three set themes, three guidance lines and, for adult decks, the consent text. Each cards file is an array of cards; edit it to change questions without touching code. Every deck must be exactly 3 sets with orders 1 to 12, and the app crashes on launch with a clear message if one doesn't match (`DeckTest` catches this first).
 
 ```json
 [

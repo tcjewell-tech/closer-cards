@@ -2,13 +2,21 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { validateDeck, serializeDeck } from './server.mjs';
+import { listDecks, validateDeck, serializeDeck } from './server.mjs';
 
-const readAsset = (name) => JSON.parse(readFileSync(new URL(`../app/src/main/assets/${name}`, import.meta.url), 'utf8'));
-const deck = readAsset('cards.json');
+const deck = JSON.parse(readFileSync(new URL('../app/src/main/assets/cards.json', import.meta.url), 'utf8'));
 
-test('accepts every deck listed in decks.json', () => {
-  for (const d of readAsset('decks.json')) assert.equal(validateDeck(readAsset(d.file)), null, d.file);
+test('accepts every deck in both deck folders', async () => {
+  const decks = await listDecks();
+  assert.deepEqual(decks.map((d) => d.deck.id), ['main', 'after-dark', 'after-darker']);
+  for (const d of decks) assert.equal(validateDeck(JSON.parse(readFileSync(d.url, 'utf8'))), null, d.deck.file);
+});
+
+test('adult decks live outside the Android app and each has a consent screen', async () => {
+  for (const { deck: d, url } of await listDecks()) {
+    // --main-only and the Android build both rely on this split.
+    assert.equal(Boolean(d.consent), url.pathname.includes('/web/decks/'), d.id);
+  }
 });
 
 test('rejects a missing card', () => {

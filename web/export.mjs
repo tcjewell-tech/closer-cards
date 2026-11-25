@@ -4,22 +4,20 @@
 import { readFile, writeFile, mkdir, rm } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { validateDeck } from './server.mjs';
+import { listDecks, validateDeck } from './server.mjs';
 
 const ROOT = new URL('../', import.meta.url);
-const ASSETS = new URL('app/src/main/assets/', ROOT);
 const asPath = (url) => fileURLToPath(url);
 
-/** Loads decks.json plus each deck's cards, keyed by file name, and refuses to ship an invalid deck. */
-export async function readData({ mainOnly = false, assets = ASSETS } = {}) {
-  const read = async (name) => JSON.parse(await readFile(new URL(name, assets), 'utf8'));
-  let decks = await read('decks.json');
-  if (mainOnly) decks = decks.filter((d) => !d.consent);
-  const data = { 'decks.json': decks };
-  for (const d of decks) {
-    data[d.file] = await read(d.file);
-    const error = validateDeck(data[d.file]);
-    if (error) throw new Error(`${d.file}: ${error}`);
+/** Loads the deck list plus each deck's cards, keyed by file name, and refuses to ship an invalid deck. */
+export async function readData({ mainOnly = false } = {}) {
+  let decks = await listDecks();
+  if (mainOnly) decks = decks.filter((d) => !d.deck.consent);
+  const data = { 'decks.json': decks.map((d) => d.deck) };
+  for (const { deck, url } of decks) {
+    data[deck.file] = JSON.parse(await readFile(url, 'utf8'));
+    const error = validateDeck(data[deck.file]);
+    if (error) throw new Error(`${deck.file}: ${error}`);
   }
   return data;
 }

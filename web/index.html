@@ -107,7 +107,7 @@ const getJson = async (file) => {
   return r.json();
 };
 
-// id -> entry from app/src/main/assets/decks.json (shared with the Android app), plus .cards once loaded.
+// id -> entry from a decks.json (the app's assets for the main deck, web/decks/ for the adult ones), plus .cards once loaded.
 let DECKS = {};
 const SETS = 3, PER_SET = 12;
 const app = document.getElementById('app');
@@ -168,7 +168,9 @@ const screens = {
     <button class="btn" data-go="setup">Play Again</button>`,
   edit: () => `
     <h2 tabindex="-1">Edit ${esc(deck().title)}</h2>
-    <p>Changes save to <code>app/src/main/assets/${esc(deck().file)}</code>, which the Android app also uses.</p>
+    <p>Changes save to ${deck().consent
+      ? `<code>web/decks/${esc(deck().file)}</code>, which only this web version uses.`
+      : `<code>app/src/main/assets/${esc(deck().file)}</code>, which the Android app also uses.`}</p>
     ${deck().themes.map((theme, i) => `
       <h3>Set ${i + 1}: ${esc(theme)}</h3>
       ${deck().cards.slice(i * PER_SET, (i + 1) * PER_SET).map((c) => `
